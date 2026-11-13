@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\PageResource\RelationManagers;
 
+use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Enums\PageBlockType;
 use App\Filament\Support\Fields;
 use App\Filament\Support\TableKit;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class BlocksRelationManager extends RelationManager
 {
+    use RevalidatesOnReorder;
     use Translatable;
 
     protected static string $relationship = 'blocks';

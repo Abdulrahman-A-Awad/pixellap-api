@@ -185,5 +185,15 @@
     "Google Maps → Share → Embed a map → copy the src URL.": "خرائط Google ← مشاركة ← تضمين خريطة ← انسخ رابط src.",
     "International format, digits only, e.g. 971501234567.": "بالصيغة الدولية وأرقام فقط، مثل 971501234567.",
     "Used when a page has no SEO title. Up to 60–70 characters.": "يُستخدم عندما لا يكون للصفحة عنوان خاص بمحركات البحث. من 60 إلى 70 حرفاً.",
-    "Used when a page has no SEO description. Up to 160 characters.": "يُستخدم عندما لا يكون للصفحة وصف خاص بمحركات البحث. حتى 160 حرفاً."
+    "Used when a page has no SEO description. Up to 160 characters.": "يُستخدم عندما لا يكون للصفحة وصف خاص بمحركات البحث. حتى 160 حرفاً.",
+    "Refresh website cache": "تحديث ذاكرة الموقع المؤقتة",
+    "Clears the API cache and asks the website to reload every page. Use it if a change does not appear on the website.": "يمسح الذاكرة المؤقتة للواجهة البرمجية ويطلب من الموقع إعادة تحميل جميع الصفحات. استخدمه إذا لم يظهر تعديل ما على الموقع.",
+    "Website refresh requested": "تم طلب تحديث الموقع",
+    "Pages update within a few seconds once the queue worker runs.": "تُحدَّث الصفحات خلال ثوانٍ عند تشغيل معالج قائمة الانتظار.",
+    "New contact message": "رسالة تواصل جديدة",
+    "From :name (:email)": "من :name (:email)",
+    "View message": "عرض الرسالة",
+    "(and :count more error)": "(وخطأ واحد آخر)",
+    "(and :count more errors)": "{2} (وخطآن آخران)|[3,10] (و:count أخطاء أخرى)|[11,*] (و:count خطأً آخر)",
+    "The given data was invalid.": "البيانات المُدخلة غير صالحة."
 }

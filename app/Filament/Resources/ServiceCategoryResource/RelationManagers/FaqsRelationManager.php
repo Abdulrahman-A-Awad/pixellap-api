@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ServiceCategoryResource\RelationManagers;
 
+use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Filament\Support\Fields;
 use App\Filament\Support\TableKit;
 use Filament\Forms\Form;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FaqsRelationManager extends RelationManager
 {
+    use RevalidatesOnReorder;
     use Translatable;
 
     protected static string $relationship = 'faqs';

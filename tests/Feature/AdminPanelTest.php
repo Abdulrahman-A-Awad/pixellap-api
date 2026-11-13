@@ -139,7 +139,10 @@ class AdminPanelTest extends TestCase
             ->assertDontSee('Home sections')
             ->assertDontSee('Service categories')
             ->assertDontSee('Site settings')
-            ->assertDontSee('Users');
+            ->assertDontSee('/admin/users') // nav link ("Users" alone matches Windows paths in Livewire snapshots)
+            // Widgets lazy-load: check which widget components are on the dashboard.
+            ->assertSee('LatestMessages')
+            ->assertDontSee('StatsOverview');
     }
 
     public function test_sales_can_triage_a_message(): void

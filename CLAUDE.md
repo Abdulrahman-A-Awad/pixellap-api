@@ -22,9 +22,7 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - **Slugs:** English-only, shared by both locales.
 - **Activity log:** every content model logs activity (spatie/laravel-activitylog, `logOnlyDirty()`).
 - **Permissions:** Filament Shield (spatie/laravel-permission). Super Admin bypasses all checks via `Gate::before`.
-- **Cache revalidation:** after any content save/delete, an observer calls the frontend revalidate webhook
-  (`config('pixellap.frontend_revalidate_url')`, signed with `config('pixellap.revalidate_secret')`) with cache tags.
-  (Implemented in a later step.)
+- **Cache revalidation:** content changes revalidate the API cache and the Next.js site (see "Public API & revalidation").
 
 ## Code style
 
@@ -69,7 +67,30 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   nobody can delete/deactivate themselves (also enforced in `Gate::before` for super admins).
 - Table reorder (`->reorderable('sort')`) writes with a query update — no model events fire (no activity log).
 
+## Public API & revalidation
+
+- Contract for the frontend: `docs/API.md` + `docs/api-types.ts`. **Update both whenever a V1 resource changes.**
+- Routes `routes/api.php` → `Api\V1\ContentController` (GETs) / `ContactController`. Queries live in
+  `App\Services\PublicContent`; JSON shape in `app/Http/Resources/V1` (`MediaResource` for every file).
+- `App\Support\ApiResponder` wraps `{data, meta}` and caches the encoded JSON 1 h per endpoint+params+locale
+  through `App\Support\ApiCache` (tag registry under `api_tags:{tag}` — works on file/database cache).
+- Throttles are named (`throttle:120,1,api`, `throttle:5,1,contact`); unnamed ones would share one counter per IP.
+- **Tag map:** `App\Support\CacheTags` is the single source of truth (local cache AND webhook).
+  New content model → add it to `AppServiceProvider::CONTENT_MODELS` and to `CacheTags::for()`.
+- `ContentObserver` / `MediaObserver` / `HandleMediaAdded` call `RevalidationService::touch()`; tags are collected
+  per request and flushed once on `app()->terminating()` → local cache flush + ONE queued `RevalidateFrontend` job.
+  Code outside a request (tinker, jobs) must call `app(RevalidationService::class)->flush()` itself.
+- Every reorderable table uses `App\Filament\Concerns\RevalidatesOnReorder` (revalidates + logs "reordered").
+  **Add it to any new `->reorderable()` List page / relation manager.**
+- Contact leads: `App\Services\ContactInbox` (store → queued `NewContactMessage` mail → Filament database notification
+  to admin + sales). Recipient: `email` setting if valid, else `CONTACT_NOTIFY_EMAIL`.
+
 ## Local notes
+
+- **Queue:** revalidation webhooks, contact emails and admin notifications are queued (`QUEUE_CONNECTION=database`).
+  Run `php artisan queue:work` alongside `php artisan serve`. If the Next.js app is not running, revalidation jobs fail quietly (logged).
+- Mail is logged locally (`MAIL_MAILER=log` → `storage/logs/laravel.log`).
+- Artisan boots very slowly (~2 min) when XAMPP MySQL is stopped — start MySQL first.
 
 - Run all commands from inside `pixellap-api/`.
 - In `APP_ENV=local`, GET API requests without an `X-Site-Key` header are allowed (browser testing). A header that is sent must be valid.

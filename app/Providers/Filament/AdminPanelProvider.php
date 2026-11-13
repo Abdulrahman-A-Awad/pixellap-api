@@ -49,6 +49,9 @@ class AdminPanelProvider extends PanelProvider
             // Until brand fonts arrive. Covers Latin + Arabic.
             ->font('IBM Plex Sans Arabic', provider: GoogleFontProvider::class)
             ->sidebarCollapsibleOnDesktop()
+            // Bell icon: new contact messages (App\Services\ContactInbox).
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->navigationGroups(array_map(
                 fn (string $group): NavigationGroup => NavigationGroup::make()->label(fn (): string => __($group)),
                 NavGroup::ordered(),
