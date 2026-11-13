@@ -1,33 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasWebpMedia;
+use App\Support\MimeTypes;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\HasMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, HasWebpMedia, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'is_active',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Mirror DB defaults so freshly created models are correct before a refresh.
      *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
+    /**
      * @var list<string>
      */
     protected $hidden = [
@@ -36,15 +49,37 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    /** Active staff with at least one role may use the admin panel. */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_active && $this->roles()->exists();
+    }
+
+    /** @return HasMany<ContactMessage, $this> */
+    public function assignedContactMessages(): HasMany
+    {
+        return $this->hasMany(ContactMessage::class, 'assigned_to');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')->singleFile()->acceptsMimeTypes(MimeTypes::IMAGES);
+    }
+
+    protected function webpCollections(): array
+    {
+        return ['avatar'];
     }
 }

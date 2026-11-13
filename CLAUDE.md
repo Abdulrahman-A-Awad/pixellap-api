@@ -42,6 +42,17 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 | pearl    | `#DFEAFB` |
 | black    | `#000000` |
 
+## Data layer conventions
+
+- Shared model concerns in `app/Models/Concerns`: `IsContent` (translations + activity log + `visible()` scope),
+  `IsSortable` (eloquent-sortable on `sort`, provides `ordered()`; children override `buildSortQuery()` to sort within parent),
+  `HasWebpMedia` (thumb/md/lg webp conversions; list image collections in `webpCollections()`).
+- Enums live in `app/Enums` (string-backed, `label()`, implement Filament `HasLabel`/`HasColor`).
+- Site settings: `Setting::get('key')` (cached forever under `settings`, cleared on save).
+- Seed copy lives in `database/seeders/data/*.php` — edit text there, not in seeder classes.
+  Seeders are idempotent (`php artisan db:seed` is safe to re-run). Settings seed with `firstOrCreate` so real values are never overwritten.
+- Tests: `php artisan test` (in-memory SQLite, does not touch MySQL).
+
 ## Local notes
 
 - Run all commands from inside `pixellap-api/`.
