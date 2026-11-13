@@ -53,6 +53,22 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   Seeders are idempotent (`php artisan db:seed` is safe to re-run). Settings seed with `firstOrCreate` so real values are never overwritten.
 - Tests: `php artisan test` (in-memory SQLite, does not touch MySQL).
 
+## Admin panel (Filament)
+
+- Navigation groups (in order) live in `App\Filament\Support\NavGroup`; resources return `__(NavGroup::X)`.
+- Build translatable inputs with `App\Filament\Support\Fields` (`text`/`textarea`/`rich` add `dir="auto"`;
+  `image`/`vectorOrImage`/`video` apply upload limits). Shared table bits: `App\Filament\Support\TableKit`.
+- Translatable resources: `use Translatable` on the resource + page concerns + `LocaleSwitcher` header action;
+  relation managers use the RM `Translatable` concern + `Tables\Actions\LocaleSwitcher`.
+- Admin UI language: `users.admin_locale` applied by `SetAdminLocale` (must run BEFORE `DispatchServingFilamentEvent`,
+  which builds the navigation). Admin labels are English and translated via `lang/ar.json` — add every new label there.
+- Permissions: Shield. **Re-generate with `php artisan shield:generate --all --panel=admin --ignore-existing-policies`**
+  — `UserPolicy` and `UiStringPolicy` contain hand-written rules; `ServicePolicy`/`PageBlockPolicy` are hand-made.
+  The role → permission matrix is `ShieldPermissionSeeder` (idempotent, part of `DatabaseSeeder`).
+- User protection: non-super admins never see/edit super admins or grant `super_admin` (validated server-side);
+  nobody can delete/deactivate themselves (also enforced in `Gate::before` for super admins).
+- Table reorder (`->reorderable('sort')`) writes with a query update — no model events fire (no activity log).
+
 ## Local notes
 
 - Run all commands from inside `pixellap-api/`.

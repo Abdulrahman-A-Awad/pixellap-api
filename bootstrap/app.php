@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Filament has no 'login' route; send guests to the panel login.
+        $middleware->redirectGuestsTo('/admin/login');
+
         $middleware->alias([
             'locale' => SetLocale::class,
             'site.key' => VerifySiteKey::class,

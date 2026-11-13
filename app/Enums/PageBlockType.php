@@ -27,6 +27,6 @@ enum PageBlockType: string implements HasLabel
 
     public function getLabel(): string
     {
-        return $this->label();
+        return __($this->label());
     }
 }

@@ -31,8 +31,30 @@ enum HomeSectionKey: string implements HasLabel
         };
     }
 
+    /**
+     * Form fields each section uses (others are hidden in the admin).
+     *
+     * @return list<string>
+     */
+    public function fields(): array
+    {
+        $base = ['eyebrow', 'title', 'subtitle'];
+
+        return match ($this) {
+            self::Hero => [...$base, 'cta', 'cta2', 'image', 'video'],
+            self::Services => [...$base, 'cta'],
+            self::About, self::ContactCta => [...$base, 'cta', 'image'],
+            default => $base,
+        };
+    }
+
+    public function supports(string $field): bool
+    {
+        return in_array($field, $this->fields(), true);
+    }
+
     public function getLabel(): string
     {
-        return $this->label();
+        return __($this->label());
     }
 }

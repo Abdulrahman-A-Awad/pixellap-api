@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\HasWebpMedia;
+use App\Providers\AppServiceProvider;
 use App\Support\MimeTypes;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -29,6 +30,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'email',
         'password',
         'is_active',
+        'admin_locale',
     ];
 
     /**
@@ -38,6 +40,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
      */
     protected $attributes = [
         'is_active' => true,
+        'admin_locale' => 'en',
     ];
 
     /**
@@ -65,6 +68,11 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_active && $this->roles()->exists();
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(AppServiceProvider::SUPER_ADMIN_ROLE);
     }
 
     /** @return HasMany<ContactMessage, $this> */

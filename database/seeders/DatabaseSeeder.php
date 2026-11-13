@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
+            ShieldPermissionSeeder::class, // needs roles
             SettingSeeder::class,
             UiStringSeeder::class,
             HomeSectionSeeder::class,
