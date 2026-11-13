@@ -34,6 +34,8 @@ return [
         'follow_us' => ['Follow us', 'تابعنا'],
         'working_hours' => ['Working hours', 'ساعات العمل'],
         'vat' => ['VAT No.', 'الرقم الضريبي'],
+        'services' => ['Services', 'خدماتنا'],
+        'contact' => ['Get in touch', 'تواصل معنا'],
     ],
 
     'form' => [
@@ -51,6 +53,34 @@ return [
         'required' => ['This field is required.', 'هذا الحقل مطلوب.'],
         'invalid_email' => ['Please enter a valid email address.', 'يُرجى إدخال بريد إلكتروني صحيح.'],
         'select_service' => ['Select a service', 'اختر الخدمة'],
+        'optional' => ['Optional', 'اختياري'],
+        'invalid_phone' => [
+            'Use digits, spaces and + ( ) - only.',
+            'يُرجى استخدام الأرقام والمسافات والرموز + ( ) - فقط.',
+        ],
+        'message_too_short' => [
+            'Please tell us a little more (at least 10 characters).',
+            'يُرجى كتابة المزيد من التفاصيل (10 أحرف على الأقل).',
+        ],
+        'too_long' => ['This text is too long.', 'هذا النص أطول من المسموح به.'],
+        'too_many_requests' => [
+            'You have sent several messages in a short time. Please try again in a minute.',
+            'لقد أرسلت عدة رسائل خلال وقت قصير. يُرجى المحاولة مرة أخرى بعد دقيقة.',
+        ],
+        'sending' => ['Sending…', 'جارٍ الإرسال…'],
+        'success_title' => ['Message sent', 'تم إرسال رسالتك'],
+        'send_another' => ['Send another message', 'إرسال رسالة أخرى'],
+    ],
+
+    'contact' => [
+        'form_title' => ['Send us a message', 'أرسل لنا رسالة'],
+        'info_title' => ['Contact details', 'بيانات التواصل'],
+        'email' => ['Email', 'البريد الإلكتروني'],
+        'phone' => ['Phone', 'الهاتف'],
+        'whatsapp' => ['Chat on WhatsApp', 'تواصل عبر واتساب'],
+        'address' => ['Address', 'العنوان'],
+        'response_time' => ['Response time', 'مدة الرد'],
+        'map_title' => ['Our location on the map', 'موقعنا على الخريطة'],
     ],
 
     'misc' => [
@@ -66,5 +96,15 @@ return [
         ],
         'menu' => ['Menu', 'القائمة'],
         'close' => ['Close', 'إغلاق'],
+        'skip_to_content' => ['Skip to content', 'الانتقال إلى المحتوى'],
+        'main_navigation' => ['Main navigation', 'القائمة الرئيسية'],
+        'language' => ['Change language', 'تغيير اللغة'],
+        'loading' => ['Loading…', 'جارٍ التحميل…'],
+        'error_title' => ['Something went wrong', 'حدث خطأ ما'],
+        'error_text' => [
+            'We could not load this page. Please try again.',
+            'تعذّر تحميل هذه الصفحة. يُرجى المحاولة مرة أخرى.',
+        ],
+        'try_again' => ['Try again', 'إعادة المحاولة'],
     ],
 ];

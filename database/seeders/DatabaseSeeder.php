@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Setting;
+use App\Support\ApiCache;
+use App\Support\CacheTags;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
@@ -35,5 +37,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Cache::forget(Setting::CACHE_KEY);
+
+        // Seeding fires no events: drop cached API responses so new seed text is served
+        // (local cache only — no frontend webhook is sent).
+        app(ApiCache::class)->flush(CacheTags::all());
     }
 }
