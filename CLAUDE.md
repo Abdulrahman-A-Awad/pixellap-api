@@ -74,7 +74,9 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   `App\Services\PublicContent`; JSON shape in `app/Http/Resources/V1` (`MediaResource` for every file).
 - `App\Support\ApiResponder` wraps `{data, meta}` and caches the encoded JSON 1 h per endpoint+params+locale
   through `App\Support\ApiCache` (tag registry under `api_tags:{tag}` — works on file/database cache).
-- Throttles are named (`throttle:120,1,api`, `throttle:5,1,contact`); unnamed ones would share one counter per IP.
+- GETs use `throttle:120,1,api` (named counter). Contact uses the `contact` RateLimiter (AppServiceProvider):
+  5/min keyed by `App\Support\ClientIp` — `X-Client-IP` only with a valid `X-Site-Key`, else `$request->ip()`;
+  the same IP is stored on the lead. Never trust `X-Client-IP` anywhere else.
 - **Tag map:** `App\Support\CacheTags` is the single source of truth (local cache AND webhook).
   New content model → add it to `AppServiceProvider::CONTENT_MODELS` and to `CacheTags::for()`.
 - `ContentObserver` / `MediaObserver` / `HandleMediaAdded` call `RevalidationService::touch()`; tags are collected

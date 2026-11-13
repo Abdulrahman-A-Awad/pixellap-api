@@ -149,6 +149,62 @@ class ContactApiTest extends TestCase
             ->assertHeader('Retry-After');
     }
 
+    /** @return array<string, string> */
+    private function relayHeaders(string $visitorIp, string $key = 'site-key'): array
+    {
+        return ['X-Site-Key' => $key, 'X-Client-IP' => $visitorIp];
+    }
+
+    public function test_relayed_visitor_ip_is_stored_with_a_valid_site_key(): void
+    {
+        Mail::fake();
+        config(['pixellap.api_site_key' => 'site-key']);
+
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('203.0.113.7'))->assertCreated();
+
+        $this->assertSame('203.0.113.7', ContactMessage::query()->sole()->ip);
+    }
+
+    public function test_limit_is_per_visitor_when_relayed_by_the_frontend(): void
+    {
+        Mail::fake();
+        config(['pixellap.api_site_key' => 'site-key']);
+
+        // Same Next.js server (same connecting IP), different visitors.
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('203.0.113.7'))->assertCreated();
+        }
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('203.0.113.7'))->assertStatus(429);
+
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('198.51.100.20'))->assertCreated();
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('2001:db8::1'))->assertCreated();
+    }
+
+    public function test_client_ip_header_is_ignored_without_a_valid_site_key(): void
+    {
+        Mail::fake();
+        config(['pixellap.api_site_key' => 'site-key']);
+
+        // Rotating a spoofed X-Client-IP must not escape the limit.
+        for ($i = 1; $i <= 5; $i++) {
+            $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders("203.0.113.{$i}", 'wrong'))->assertCreated();
+        }
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('203.0.113.99', 'wrong'))->assertStatus(429);
+        $this->postJson('/api/v1/contact', $this->payload(), ['X-Client-IP' => '203.0.113.100'])->assertStatus(429);
+
+        $this->assertSame(['127.0.0.1'], ContactMessage::query()->distinct()->pluck('ip')->all());
+    }
+
+    public function test_invalid_client_ip_falls_back_to_the_connecting_ip(): void
+    {
+        Mail::fake();
+        config(['pixellap.api_site_key' => 'site-key']);
+
+        $this->postJson('/api/v1/contact', $this->payload(), $this->relayHeaders('not-an-ip'))->assertCreated();
+
+        $this->assertSame('127.0.0.1', ContactMessage::query()->sole()->ip);
+    }
+
     public function test_read_requests_do_not_count_towards_the_contact_limit(): void
     {
         Mail::fake();

@@ -1234,9 +1234,21 @@ Path scheme: `/{locale}`, `/{locale}/about`, `/{locale}/services`, `/{locale}/co
 ### POST /contact
 
 Submits the contact form. Call it **from the Next.js server** (a Server Action or route handler), not from
-the browser. No `X-Site-Key` is needed. Browser calls are also blocked by CORS unless they come from `FRONTEND_URL`.
+the browser. Browser calls are also blocked by CORS unless they come from `FRONTEND_URL`.
 
-- **Rate limit: 5 requests/minute per IP.** Its counter is separate from the GET limit.
+- **Headers (send both):**
+
+  | Header | Value |
+  |---|---|
+  | `X-Site-Key` | `{API_SITE_KEY}` |
+  | `X-Client-IP` | the **visitor's** IP: the first entry of `x-forwarded-for`, else `x-real-ip` |
+
+- **Rate limit: 5 requests/minute per visitor.** Its counter is separate from the GET limit.
+  - Because the Next server makes every call, the API counts per `X-Client-IP`, but **only when
+    `X-Site-Key` is valid and the header holds a valid IPv4/IPv6 address**. The same IP is stored on the lead.
+  - Otherwise (no key, wrong key, missing or invalid IP) the connecting IP is used. Without the
+    headers, all visitors would share one limit of 5/min.
+  - A wrong site key does **not** reject the submission; it only disables the per-visitor limit.
 - Body: JSON `ContactPayload`.
 
 | Field | Rules |

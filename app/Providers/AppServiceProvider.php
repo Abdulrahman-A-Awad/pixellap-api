@@ -21,7 +21,11 @@ use App\Observers\MediaObserver;
 use App\Policies\ActivityPolicy;
 use App\Services\RevalidationService;
 use App\Support\ApiCache;
+use App\Support\ClientIp;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -55,6 +59,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // POST /contact: 5 per minute per VISITOR (X-Client-IP is trusted only with a valid site key).
+        RateLimiter::for('contact', fn (Request $request): Limit => Limit::perMinute(5)->by(ClientIp::resolve($request)));
+
         // Vendor model: not auto-discovered from App\Policies.
         Gate::policy(Activity::class, ActivityPolicy::class);
 

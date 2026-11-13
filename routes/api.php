@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Route;
 | Public API v1 (consumed by the Next.js frontend) — see docs/API.md
 |--------------------------------------------------------------------------
 |
-| Rate-limit counters are named ("api", "contact") so the two limits are
-| tracked separately; unnamed throttles would share one counter per IP.
+| GET limit uses a named counter ("api") so it never shares the contact counter.
+| Contact uses the "contact" rate limiter (AppServiceProvider): per visitor IP via
+| X-Client-IP when the site key is valid — see App\Support\ClientIp.
 */
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
@@ -29,6 +30,6 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
     // Called server-side by Next.js; browsers are limited by CORS (config/cors.php).
     Route::post('contact', ContactController::class)
-        ->middleware(['locale', 'throttle:5,1,contact'])
+        ->middleware(['locale', 'throttle:contact'])
         ->name('contact');
 });

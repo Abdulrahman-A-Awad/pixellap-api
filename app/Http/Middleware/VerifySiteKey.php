@@ -31,12 +31,19 @@ class VerifySiteKey
             return $next($request);
         }
 
-        $expected = (string) config('pixellap.api_site_key');
-
-        if ($expected === '' || ! is_string($provided) || ! hash_equals($expected, $provided)) {
+        if (! self::isValid($request)) {
             return response()->json(['message' => 'Invalid site key.'], Response::HTTP_UNAUTHORIZED);
         }
 
         return $next($request);
+    }
+
+    /** True when the request carries the correct X-Site-Key (constant-time compare). */
+    public static function isValid(Request $request): bool
+    {
+        $expected = (string) config('pixellap.api_site_key');
+        $provided = $request->header(self::HEADER);
+
+        return $expected !== '' && is_string($provided) && hash_equals($expected, $provided);
     }
 }

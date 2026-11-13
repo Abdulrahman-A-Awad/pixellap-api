@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\StoreContactRequest;
 use App\Services\ContactInbox;
 use App\Services\PublicContent;
 use App\Support\ApiResponder;
+use App\Support\ClientIp;
 use Illuminate\Http\JsonResponse;
 
 class ContactController extends Controller
@@ -20,7 +21,7 @@ class ContactController extends Controller
         ApiResponder $responder,
     ): JsonResponse {
         if (! $request->isSpam()) {
-            $inbox->receive($request->validated(), $request->ip(), $request->userAgent());
+            $inbox->receive($request->validated(), ClientIp::resolve($request), $request->userAgent());
         }
 
         return $responder->make(
