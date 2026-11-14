@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\VerifySiteKey;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Filament has no 'login' route; send guests to the panel login.
         $middleware->redirectGuestsTo('/admin/login');
+
+        // Nginx talks to PHP-FPM on this box; only a proxy on localhost may set X-Forwarded-*.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+
+        // Browser-facing responses (Livewire requests included). The admin panel adds it too.
+        $middleware->web(append: [SecurityHeaders::class]);
 
         $middleware->alias([
             'locale' => SetLocale::class,

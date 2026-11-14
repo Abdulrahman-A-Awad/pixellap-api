@@ -25,8 +25,12 @@ class RoleSeeder extends Seeder
             Role::findOrCreate($name, 'web');
         }
 
-        // Temporary super admin — CHANGE THE PASSWORD before going live.
-        // Existing users keep their current password.
+        // Production never gets a default account: create one with `php artisan pixellap:create-super-admin`.
+        if (app()->isProduction()) {
+            return;
+        }
+
+        // Local/testing convenience super admin. Existing users keep their current password.
         $admin = User::firstOrCreate(
             ['email' => 'admin@pixellap.test'],
             ['name' => 'Super Admin', 'password' => 'password', 'is_active' => true],

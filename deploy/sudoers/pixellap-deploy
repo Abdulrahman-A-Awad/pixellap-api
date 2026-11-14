@@ -1,0 +1,3 @@
+# -> /etc/sudoers.d/pixellap-deploy (provision.sh, validated with visudo -c)
+# The only root commands the deploy scripts need.
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl reload php8.3-fpm, /usr/bin/systemctl restart pixellap-queue, /usr/bin/systemctl reload nginx

@@ -1,0 +1,9 @@
+# Pixellap cron jobs -> /etc/cron.d/pixellap (provision.sh). Format: m h dom mon dow USER command
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Laravel scheduler (routes/console.php): every minute.
+* * * * * deploy cd /var/www/pixellap-api && php artisan schedule:run >> /dev/null 2>&1
+
+# Nightly backup at 02:30 server time: MySQL dump + uploaded media, kept 14 days.
+30 2 * * * deploy /var/www/pixellap-api/deploy/scripts/backup.sh >> /var/log/pixellap/backup.log 2>&1

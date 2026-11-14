@@ -87,6 +87,20 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - Contact leads: `App\Services\ContactInbox` (store → queued `NewContactMessage` mail → Filament database notification
   to admin + sales). Recipient: `email` setting if valid, else `CONTACT_NOTIFY_EMAIL`.
 
+## Production
+
+- Deploy kit + runbook: `deploy/README.md` (one Ubuntu 24.04 box: Nginx, PHP 8.3-FPM pool `pixellap` running as
+  `deploy`, MySQL 8, PM2 for the website, queue worker = `pixellap-queue` systemd service, cron for the scheduler + backups).
+  Env template: `.env.production.example`. Scripts in `deploy/scripts` must stay `shellcheck`-clean.
+- Commands: `pixellap:check-production` (fails on debug/secrets/default admin/TODO settings/storage link/queue tables),
+  `pixellap:create-super-admin` (production has NO seeded admin — `RoleSeeder` skips it when `APP_ENV=production`),
+  `pixellap:revalidate-all` (sync full refresh; deploy scripts call it).
+- `db:seed` in production overwrites seeded content (`updateOrCreate`): first deploy only (`deploy-api.sh --seed`).
+- Security: `SecurityHeaders` on the web group + panel; `RequireHttps` on the panel (production); trusted proxies =
+  localhost only; admin login limited 5/min per email+IP (`App\Filament\Pages\Auth\Login`) on top of Filament's per-IP limit.
+- OPcache runs with `validate_timestamps=0`: code changes need `sudo systemctl reload php8.3-fpm` (deploy script does it).
+- Caches (`optimize`, `filament:optimize`) are built by the deploy script, never committed.
+
 ## Local notes
 
 - **Queue:** revalidation webhooks, contact emails and admin notifications are queued (`QUEUE_CONNECTION=database`).

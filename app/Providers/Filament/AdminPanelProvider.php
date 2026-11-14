@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Support\NavGroup;
+use App\Http\Middleware\RequireHttps;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAdminLocale;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\FontProviders\GoogleFontProvider;
@@ -40,7 +43,8 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // Adds a 5/min per email+IP limiter on top of Filament's per-IP limiter.
+            ->login(Login::class)
             ->brandName('Pixellap')
             ->colors([
                 'primary' => Color::hex('#612FE2'),
@@ -77,6 +81,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
             ])
             ->middleware([
+                // Production: HTTPS only (redirect GET, refuse the rest).
+                RequireHttps::class,
+                SecurityHeaders::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -91,6 +98,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             // Also applied to Livewire requests made from panel pages (idempotent).
             ->middleware([
+                RequireHttps::class,
                 SetAdminLocale::class,
             ], isPersistent: true)
             ->authMiddleware([
