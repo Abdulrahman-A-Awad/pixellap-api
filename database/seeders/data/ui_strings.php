@@ -81,6 +81,26 @@ return [
         'address' => ['Address', 'العنوان'],
         'response_time' => ['Response time', 'مدة الرد'],
         'map_title' => ['Our location on the map', 'موقعنا على الخريطة'],
+        // Prefilled message when arriving from "Request this service" ({item} = service title).
+        'interested_in' => ["I'm interested in: {item}", 'أودّ الاستفسار عن: {item}'],
+    ],
+
+    // Services index + category pages.
+    'services' => [
+        // Plural forms by Intl.PluralRules category ({count} = number). English uses one/other.
+        'count_zero' => ['{count} services', 'لا توجد خدمات'],
+        'count_one' => ['{count} service', 'خدمة واحدة'],
+        'count_two' => ['{count} services', 'خدمتان'],
+        'count_few' => ['{count} services', '{count} خدمات'],
+        'count_many' => ['{count} services', '{count} خدمة'],
+        'count_other' => ['{count} services', '{count} خدمة'],
+        'overview' => ['Overview', 'نظرة عامة'],
+        'list_title' => ['What we offer', 'ما نقدّمه'],
+        'index_label' => ['Services in this category', 'خدمات هذا القسم'],
+        'jump_to' => ['Jump to a service', 'انتقل إلى خدمة'],
+        'request' => ['Request this service', 'اطلب هذه الخدمة'],
+        'faq_title' => ['Frequently asked questions', 'الأسئلة الشائعة'],
+        'explore_other' => ['Explore other services', 'استكشف خدماتنا الأخرى'],
     ],
 
     'misc' => [
@@ -106,5 +126,8 @@ return [
             'تعذّر تحميل هذه الصفحة. يُرجى المحاولة مرة أخرى.',
         ],
         'try_again' => ['Try again', 'إعادة المحاولة'],
+        'breadcrumb' => ['Breadcrumb', 'مسار التنقل'],
+        'previous' => ['Previous', 'السابق'],
+        'next' => ['Next', 'التالي'],
     ],
 ];
