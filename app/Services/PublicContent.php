@@ -32,15 +32,18 @@ final class PublicContent
         'site_name', 'tagline', 'showreel_url',
         'email', 'phone', 'whatsapp', 'address', 'map_embed_url', 'working_hours', 'vat_number', 'response_time',
         'socials',
-        'seo_default_title', 'seo_default_description',
+        'seo_default_title', 'seo_default_description', 'og_image',
     ];
+
+    /** Image settings: stored as a public-disk path, returned as an absolute URL. */
+    public const IMAGE_SETTINGS = ['og_image'];
 
     /** @return array<string, mixed> */
     public function settings(): array
     {
         $out = [];
         foreach (self::PUBLIC_SETTINGS as $key) {
-            $out[$key] = Setting::get($key);
+            $out[$key] = in_array($key, self::IMAGE_SETTINGS, true) ? Setting::imageUrl($key) : Setting::get($key);
         }
 
         return $out;

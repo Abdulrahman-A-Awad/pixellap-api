@@ -59,4 +59,6 @@ return [
         'en' => 'Pixellap brings brand identity, media production, digital marketing, web development and AI-powered content together under one roof for businesses across the UAE and GCC.',
         'ar' => 'تجمع Pixellap بناء الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع والمحتوى المدعوم بالذكاء الاصطناعي تحت سقف واحد، لخدمة الشركات في الإمارات ودول مجلس التعاون الخليجي.',
     ]],
+    // Path on the public disk (uploaded in the admin). Default social sharing image, 1200×630.
+    ['key' => 'og_image', 'group' => 'seo', 'type' => 'image', 'value' => null],
 ];

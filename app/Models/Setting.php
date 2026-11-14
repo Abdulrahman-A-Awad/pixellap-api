@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -32,6 +33,13 @@ class Setting extends Model
 
     public const TYPE_BOOLEAN = 'boolean';
 
+    /** A file path on the public disk (settings have no media library). */
+    public const TYPE_IMAGE = 'image';
+
+    public const IMAGE_DISK = 'public';
+
+    public const IMAGE_DIRECTORY = 'settings';
+
     protected $fillable = ['key', 'group', 'type', 'value'];
 
     protected function casts(): array
@@ -45,12 +53,35 @@ class Setting extends Model
     {
         static::saved(fn () => Cache::forget(self::CACHE_KEY));
         static::deleted(fn () => Cache::forget(self::CACHE_KEY));
+
+        // Replacing or clearing an image setting removes the previous file.
+        static::updated(function (self $setting): void {
+            $old = $setting->getOriginal('value');
+            if ($setting->type === self::TYPE_IMAGE && is_string($old) && $old !== '' && $old !== $setting->value) {
+                Storage::disk(self::IMAGE_DISK)->delete($old);
+            }
+        });
     }
 
     /**
      * Read a setting. Translatable settings resolve to the current locale,
      * falling back to the fallback locale.
      */
+    /** Absolute URL of an image setting (APP_URL/storage/...), or null when empty. */
+    public static function imageUrl(string $key): ?string
+    {
+        $path = static::get($key);
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        $url = Storage::disk(self::IMAGE_DISK)->url($path);
+
+        // Guarantee an absolute URL even if the disk is configured with a relative one.
+        return preg_match('#^https?://#i', $url) === 1 ? $url : rtrim((string) config('app.url'), '/').'/'.ltrim($url, '/');
+    }
+
     public static function get(string $key, mixed $default = null): mixed
     {
         /** @var array<string, array{type: string, value: mixed}> $all */

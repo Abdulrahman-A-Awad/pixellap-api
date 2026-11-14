@@ -106,6 +106,10 @@ Global layout data: public settings (contact details, socials, SEO defaults), ev
 as a flat `{key: value}` map, the categories for the navigation, and the available locales. Fetch it
 once per request in the root layout.
 
+`settings.og_image` is the default social sharing image (1200×630) as an **absolute URL**, or `null`
+until an editor uploads one (Admin → Site settings → SEO). Use it as the Open Graph image when a
+page has no image of its own.
+
 ```ts
 const site = await api<SiteResponse>('/site', { locale, tags: ['site'] });
 site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
@@ -138,7 +142,8 @@ site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
         "behance": ""
       },
       "seo_default_title": "Pixellap — Creative, Media & Digital Agency in the UAE",
-      "seo_default_description": "Pixellap brings brand identity, media production, digital marketing, web development and AI-powered content together under one roof for businesses across the UAE and GCC."
+      "seo_default_description": "Pixellap brings brand identity, media production, digital marketing, web development and AI-powered content together under one roof for businesses across the UAE and GCC.",
+      "og_image": null
     },
     "ui_strings": {
       "actions.back_home": "Back to home",
@@ -231,7 +236,7 @@ Fields a section type does not use are always `null`. Extra data per key:
 
 | key | Extra field(s) |
 |---|---|
-| `hero` | — (uses `cta`, `cta2`, `image`, `video`) |
+| `hero` | — (uses `cta`, `cta2`, `image`, `video`; see the hero media notes below) |
 | `stats` | `items: HomeStat[]` (`value` is a number; animate it, then wrap with `prefix`/`suffix`) |
 | `services` | `categories: HomeCategoryCard[]` (each with `services: string[]` titles for tags) |
 | `process` | `steps: ProcessStep[]` (`icon` is an icon name, e.g. `"rocket"`) |
@@ -241,6 +246,15 @@ Fields a section type does not use are always `null`. Extra data per key:
 | `contact_cta` | `response_time`, `whatsapp` |
 
 Sections can be hidden or reordered in the admin, so never assume a fixed position.
+
+**Hero media.** The hero is a 3D scene in the browser. Its two media fields are its fallbacks, and both are `MediaAsset | null`:
+
+- `video` is the **fallback loop video**, shown instead of the 3D scene on phones and low-power
+  devices. It is silent, 6–10 s, ≤ 3 MB (the admin enforces the size), `video/webm` or `video/mp4`;
+  check `mime`. Play it `muted playsInline loop autoPlay preload="metadata"`. `conversions` is `null`.
+- `image` is the **poster** (the first frame of the loop video). Use it as the video `poster`, as the
+  static hero for reduced motion, and as the placeholder until the 3D scene is ready. It has WebP
+  `conversions`.
 
 `GET /api/v1/home?locale=en`
 

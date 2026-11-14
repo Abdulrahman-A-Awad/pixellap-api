@@ -195,5 +195,10 @@
     "View message": "عرض الرسالة",
     "(and :count more error)": "(وخطأ واحد آخر)",
     "(and :count more errors)": "{2} (وخطآن آخران)|[3,10] (و:count أخطاء أخرى)|[11,*] (و:count خطأً آخر)",
-    "The given data was invalid.": "البيانات المُدخلة غير صالحة."
+    "The given data was invalid.": "البيانات المُدخلة غير صالحة.",
+    "Social sharing image": "صورة المشاركة على مواقع التواصل",
+    "Shown when a page is shared on social media. 1200 × 630 px, JPG or PNG.": "تظهر عند مشاركة إحدى صفحات الموقع على مواقع التواصل الاجتماعي. المقاس 1200 × 630 بكسل، بصيغة JPG أو PNG.",
+    "Poster image (first frame)": "صورة الغلاف (الإطار الأول)",
+    "Fallback loop video (mobile / low-power devices, silent, 6–10s, ≤ 3 MB, webm or mp4)": "فيديو بديل متكرر (للجوال والأجهزة محدودة الأداء، بدون صوت، من 6 إلى 10 ثوانٍ، بحد أقصى 3 ميغابايت، بصيغة WebM أو MP4)",
+    "Shown instead of the 3D scene on phones and low-power devices. Keep it silent and short.": "يُعرض بدلاً من المشهد ثلاثي الأبعاد على الهواتف والأجهزة محدودة الأداء. اجعله قصيراً وبدون صوت."
 }

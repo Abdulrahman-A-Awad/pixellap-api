@@ -9,7 +9,9 @@ use App\Filament\Support\NavGroup;
 use App\Models\Setting;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use App\Support\MimeTypes;
 use Filament\Forms\Components\Component;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Tabs;
@@ -62,6 +64,7 @@ class ManageSettings extends Page implements HasForms
         'whatsapp' => 'International format, digits only, e.g. 971501234567.',
         'seo_default_title' => 'Used when a page has no SEO title. Up to 60–70 characters.',
         'seo_default_description' => 'Used when a page has no SEO description. Up to 160 characters.',
+        'og_image' => 'Shown when a page is shared on social media. 1200 × 630 px, JPG or PNG.',
     ];
 
     /** @var array<string, mixed>|null */
@@ -121,6 +124,18 @@ class ManageSettings extends Page implements HasForms
             Setting::TYPE_TRANSLATABLE => Fields::bilingual($key, $label, in_array($key, self::MULTILINE_KEYS, true)),
 
             Setting::TYPE_BOOLEAN => Toggle::make($key)->label($label)->helperText($help),
+
+            Setting::TYPE_IMAGE => FileUpload::make($key)
+                ->label($key === 'og_image' ? 'Social sharing image' : $label)
+                ->helperText($help)
+                ->image()
+                ->disk(Setting::IMAGE_DISK)
+                ->directory(Setting::IMAGE_DIRECTORY)
+                ->visibility('public')
+                ->acceptedFileTypes(MimeTypes::IMAGES)
+                ->maxSize(Fields::IMAGE_MAX_KB)
+                ->imagePreviewHeight('160')
+                ->downloadable(),
 
             // Socials: one URL input per network.
             Setting::TYPE_JSON => $key === 'socials'

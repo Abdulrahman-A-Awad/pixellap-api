@@ -29,6 +29,9 @@ class HomeSectionResource extends Resource
 {
     use Translatable;
 
+    /** The hero loop video must stay light: it replaces the 3D scene on weak devices. */
+    public const HERO_VIDEO_MAX_KB = 3 * 1024;
+
     protected static ?string $model = HomeSection::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
@@ -107,8 +110,16 @@ class HomeSectionResource extends Resource
                 ->columns(2)
                 ->visible(fn (?HomeSection $record): bool => (bool) $record?->key?->supports('image'))
                 ->schema([
-                    Fields::image('image')->label('Image'),
-                    Fields::video('video')->label('Video')->visible(self::for('video')),
+                    // Hero: the 3D scene's poster + the loop video used on mobile / low-power devices.
+                    Fields::image('image')
+                        ->label(fn (?HomeSection $record): string => __($record?->key === HomeSectionKey::Hero
+                            ? 'Poster image (first frame)'
+                            : 'Image')),
+                    Fields::video('video')
+                        ->label('Fallback loop video (mobile / low-power devices, silent, 6–10s, ≤ 3 MB, webm or mp4)')
+                        ->maxSize(self::HERO_VIDEO_MAX_KB)
+                        ->helperText(__('Shown instead of the 3D scene on phones and low-power devices. Keep it silent and short.'))
+                        ->visible(self::for('video')),
                 ]),
 
             Section::make()
