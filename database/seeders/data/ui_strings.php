@@ -67,7 +67,7 @@ return [
             'You have sent several messages in a short time. Please try again in a minute.',
             'لقد أرسلت عدة رسائل خلال وقت قصير. يُرجى المحاولة مرة أخرى بعد دقيقة.',
         ],
-        'sending' => ['Sending…', 'جارٍ الإرسال…'],
+        'sending' => ['Sending...', 'جارٍ الإرسال...'],
         'success_title' => ['Message sent', 'تم إرسال رسالتك'],
         'send_another' => ['Send another message', 'إرسال رسالة أخرى'],
     ],
@@ -119,7 +119,7 @@ return [
         'skip_to_content' => ['Skip to content', 'الانتقال إلى المحتوى'],
         'main_navigation' => ['Main navigation', 'القائمة الرئيسية'],
         'language' => ['Change language', 'تغيير اللغة'],
-        'loading' => ['Loading…', 'جارٍ التحميل…'],
+        'loading' => ['Loading...', 'جارٍ التحميل...'],
         'error_title' => ['Something went wrong', 'حدث خطأ ما'],
         'error_text' => [
             'We could not load this page. Please try again.',
