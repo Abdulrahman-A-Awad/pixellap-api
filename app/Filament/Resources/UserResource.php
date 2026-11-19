@@ -45,6 +45,14 @@ class UserResource extends Resource
         return __(NavGroup::ACCESS);
     }
 
+    /** The "Access" group is shown to super admins only (access rules stay in the policy). */
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof User && $user->isSuperAdmin() && parent::shouldRegisterNavigation();
+    }
+
     public static function getModelLabel(): string
     {
         return __('User');
@@ -91,7 +99,8 @@ class UserResource extends Resource
             ->schema([
                 Group::make()->columnSpan(2)->schema([
                     Section::make(__('Account'))->columns(2)->schema([
-                        TextInput::make('name')->label('Name')->required()->maxLength(255),
+                        TextInput::make('name')->label('Name')->required()->maxLength(255)
+                            ->helperText(__('Shown in the admin only.')),
                         TextInput::make('email')->label('Email')->email()->required()->maxLength(255)
                             ->unique(ignoreRecord: true),
                         TextInput::make('password')
@@ -105,6 +114,7 @@ class UserResource extends Resource
                                 ? __('Leave empty to keep the current password.') : null),
                         Select::make('admin_locale')
                             ->label('Admin language')
+                            ->helperText(__('Language of this admin panel for this person.'))
                             ->options(['en' => 'English', 'ar' => 'العربية'])
                             ->default('en')
                             ->required()
@@ -113,6 +123,7 @@ class UserResource extends Resource
                     Section::make(__('Access'))->columns(2)->schema([
                         Select::make('roles')
                             ->label('Roles')
+                            ->helperText(__('Admin: everything. Content editor: edits content, cannot delete. Sales: messages only.'))
                             ->relationship(
                                 'roles',
                                 'name',
@@ -148,7 +159,8 @@ class UserResource extends Resource
                 ]),
                 Group::make()->columnSpan(1)->schema([
                     Section::make()->schema([
-                        Fields::image('avatar')->label('Avatar')->avatar()->imageEditor(),
+                        Fields::image('avatar')->label('Profile photo')->avatar()->imageEditor()
+                            ->helperText(__('Optional. Square photo.')),
                         Placeholder::make('last_login_at')
                             ->label('Last login')
                             ->content(fn (?User $record): string => $record?->last_login_at?->diffForHumans() ?? __('Never')),

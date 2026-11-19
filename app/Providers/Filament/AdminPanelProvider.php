@@ -11,7 +11,7 @@ use App\Http\Middleware\RequireHttps;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAdminLocale;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Filament\FontProviders\GoogleFontProvider;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Placeholder;
 use Filament\Http\Middleware\Authenticate;
@@ -25,9 +25,11 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
-use Filament\Widgets;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -46,18 +48,25 @@ class AdminPanelProvider extends PanelProvider
             // Adds a 5/min per email+IP limiter on top of Filament's per-IP limiter.
             ->login(Login::class)
             ->brandName('Pixellap')
+            ->brandLogo(fn (): string => asset('brand/pixellap-logo.svg'))
+            ->darkModeBrandLogo(fn (): string => asset('brand/pixellap-logo-white.svg'))
+            ->brandLogoHeight('2.5rem')
+            ->favicon(fn (): string => asset('brand/favicon.svg'))
             ->colors([
                 'primary' => Color::hex('#612FE2'),
             ])
             ->darkMode(true)
-            // Until brand fonts arrive. Covers Latin + Arabic.
-            ->font('IBM Plex Sans Arabic', provider: GoogleFontProvider::class)
+            // Brand font (Arabic + Latin), served from public/fonts — no build step.
+            ->font('RH-Zak', url: asset('fonts/rh-zak.css'), provider: LocalFontProvider::class)
+            ->maxContentWidth(MaxWidth::SevenExtraLarge)
             ->sidebarCollapsibleOnDesktop()
             // Bell icon: new contact messages (App\Services\ContactInbox).
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->navigationGroups(array_map(
-                fn (string $group): NavigationGroup => NavigationGroup::make()->label(fn (): string => __($group)),
+                fn (string $group): NavigationGroup => NavigationGroup::make()
+                    ->label(fn (): string => __($group))
+                    ->collapsible(false),
                 NavGroup::ordered(),
             ))
             ->userMenuItems([
@@ -77,9 +86,17 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-            ])
+            // Only the app's own widgets (no Account / Filament info widgets).
+            ->widgets([])
+            // Login: short tagline above the form + a subtle pixel-square background (CSS only).
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): View => view('filament.auth.login-tagline'),
+            )
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn (): View => view('filament.auth.panel-styles'),
+            )
             ->middleware([
                 // Production: HTTPS only (redirect GET, refuse the rest).
                 RequireHttps::class,

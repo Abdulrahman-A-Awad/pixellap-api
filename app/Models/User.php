@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\HasWebpMedia;
 use App\Providers\AppServiceProvider;
 use App\Support\MimeTypes;
+use App\Support\WebsiteReadiness;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -62,6 +63,13 @@ class User extends Authenticatable implements FilamentUser, HasMedia
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // The dashboard checklist flags the default admin account.
+        static::saved(fn () => WebsiteReadiness::forget());
+        static::deleted(fn () => WebsiteReadiness::forget());
     }
 
     /** Active staff with at least one role may use the admin panel. */

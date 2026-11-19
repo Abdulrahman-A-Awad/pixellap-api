@@ -7,12 +7,12 @@ namespace App\Filament\Pages;
 use App\Filament\Support\Fields;
 use App\Filament\Support\NavGroup;
 use App\Models\Setting;
+use App\Support\MimeTypes;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
-use App\Support\MimeTypes;
 use Filament\Forms\Components\Component;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
@@ -58,12 +58,40 @@ class ManageSettings extends Page implements HasForms
 
     private const MULTILINE_KEYS = ['address', 'seo_default_description'];
 
+    /** Plain-language field labels (English keys, translated via lang/ar.json). */
+    public const LABELS = [
+        'site_name' => 'Website name',
+        'tagline' => 'Tagline',
+        'showreel_url' => 'Showreel link',
+        'email' => 'Contact email',
+        'phone' => 'Phone number',
+        'whatsapp' => 'WhatsApp number',
+        'address' => 'Address',
+        'map_embed_url' => 'Map link (embed)',
+        'working_hours' => 'Working hours',
+        'vat_number' => 'VAT number',
+        'response_time' => 'Reply time promise',
+        'socials' => 'Social media links',
+        'seo_default_title' => 'Default page title (Google)',
+        'seo_default_description' => 'Default page description (Google)',
+        'og_image' => 'Social sharing image',
+    ];
+
     private const HELP = [
-        'showreel_url' => 'YouTube, Vimeo or direct .mp4 link.',
-        'map_embed_url' => 'Google Maps → Share → Embed a map → copy the src URL.',
-        'whatsapp' => 'International format, digits only, e.g. 971501234567.',
-        'seo_default_title' => 'Used when a page has no SEO title. Up to 60–70 characters.',
-        'seo_default_description' => 'Used when a page has no SEO description. Up to 160 characters.',
+        'site_name' => 'Shown in the browser tab, the footer and search results.',
+        'tagline' => 'A short slogan shown in the footer (and as the home headline if it is empty).',
+        'showreel_url' => 'YouTube, Vimeo or a direct .mp4 link. Empty = the “Watch the reel” button is hidden.',
+        'email' => 'Shown on the Contact page and footer. New contact-form messages are sent here.',
+        'phone' => 'Shown on the Contact page and footer, e.g. +971 50 000 0000.',
+        'whatsapp' => 'International format, digits only, e.g. 971501234567. Powers the WhatsApp button.',
+        'address' => 'Shown on the Contact page and footer.',
+        'map_embed_url' => 'Google Maps → Share → Embed a map → copy the src URL. Empty = no map.',
+        'working_hours' => 'Shown on the Contact page and footer, e.g. Mon–Fri 9:00–18:00.',
+        'vat_number' => 'Shown in the footer (TRN).',
+        'response_time' => 'Shown near the contact buttons, e.g. “We reply within 24 hours.”',
+        'socials' => 'Full links to your profiles. Empty ones are not shown in the footer.',
+        'seo_default_title' => 'Used when a page has no title of its own. Up to 60–70 characters.',
+        'seo_default_description' => 'Used when a page has no description of its own. Up to 160 characters.',
         'og_image' => 'Shown when a page is shared on social media. 1200 × 630 px, JPG or PNG.',
     ];
 
@@ -117,16 +145,16 @@ class ManageSettings extends Page implements HasForms
     private function fieldFor(Setting $setting): Component
     {
         $key = $setting->key;
-        $label = Str::headline($key);
+        $label = self::LABELS[$key] ?? Str::headline($key);
         $help = isset(self::HELP[$key]) ? __(self::HELP[$key]) : null;
 
         return match ($setting->type) {
-            Setting::TYPE_TRANSLATABLE => Fields::bilingual($key, $label, in_array($key, self::MULTILINE_KEYS, true)),
+            Setting::TYPE_TRANSLATABLE => Fields::bilingual($key, $label, in_array($key, self::MULTILINE_KEYS, true), $help),
 
             Setting::TYPE_BOOLEAN => Toggle::make($key)->label($label)->helperText($help),
 
             Setting::TYPE_IMAGE => FileUpload::make($key)
-                ->label($key === 'og_image' ? 'Social sharing image' : $label)
+                ->label($label)
                 ->helperText($help)
                 ->image()
                 ->disk(Setting::IMAGE_DISK)
@@ -139,7 +167,7 @@ class ManageSettings extends Page implements HasForms
 
             // Socials: one URL input per network.
             Setting::TYPE_JSON => $key === 'socials'
-                ? Grid::make(2)->schema(
+                ? Fieldset::make(__($label))->columns(2)->schema(
                     collect((array) $setting->value)->keys()
                         ->map(fn (string $network): TextInput => TextInput::make("{$key}.{$network}")
                             ->label(Str::headline($network === 'x' ? 'X (Twitter)' : $network))

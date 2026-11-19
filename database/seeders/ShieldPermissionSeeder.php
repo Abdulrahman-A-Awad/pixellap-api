@@ -27,8 +27,12 @@ class ShieldPermissionSeeder extends Seeder
         'service::category', 'service', 'page', 'page::block',
     ];
 
-    /** Models edited through relation managers — Shield does not generate these. */
-    public const CUSTOM = ['service', 'page::block'];
+    /**
+     * Models without their own Filament resource — Shield does not generate these:
+     * services / page blocks (relation managers) and the home section items edited inside
+     * their section (stats, process steps, clients, home FAQs — App\Filament\Widgets\HomeItems).
+     */
+    public const CUSTOM = ['service', 'page::block', 'stat', 'process::step', 'client', 'faq'];
 
     public function run(): void
     {

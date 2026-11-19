@@ -44,6 +44,11 @@ class UiStringResource extends Resource
         return __('Interface texts');
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('Interface texts');
+    }
+
     private static function isSuperAdmin(): bool
     {
         $user = auth()->user();
@@ -66,11 +71,12 @@ class UiStringResource extends Resource
                 ->disabled($locked),
             TextInput::make('group')
                 ->label('Group')
+                ->helperText(__('Where the text is used on the website, e.g. nav, form, footer.'))
                 ->required()
                 ->maxLength(50)
                 ->regex('/^[a-z0-9_]+$/')
                 ->disabled($locked),
-            Fields::bilingual('value', 'Text', multiline: true)->columnSpanFull(),
+            Fields::bilingual('value', 'Text', multiline: true, help: __('Exactly as it should appear on the website. Keep {placeholders} like {count} unchanged.'))->columnSpanFull(),
         ]);
     }
 

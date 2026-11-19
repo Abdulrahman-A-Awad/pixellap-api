@@ -239,11 +239,11 @@ Fields a section type does not use are always `null`. Extra data per key:
 | `hero` | `media: HeroMedia` (loop video variants; uses `cta`, `cta2`; see the hero media notes below) |
 | `stats` | `items: HomeStat[]` (`value` is a number; animate it, then wrap with `prefix`/`suffix`) |
 | `services` | `categories: HomeCategoryCard[]` (each with `services: string[]` titles for tags) |
-| `process` | `steps: ProcessStep[]` (`icon` is an icon name, e.g. `"rocket"`) |
+| `process` | `steps: ProcessStep[]` (`title`, `description`) |
 | `clients` | `items: ClientLogo[]` (empty until logos are added; hide the section when it is empty) |
 | `about` | — (uses `cta`, `image`) |
 | `faq` | `faqs: Faq[]` (home FAQs only) |
-| `contact_cta` | `response_time`, `whatsapp` |
+| `contact_cta` | `response_time`, `whatsapp` (uses `title`, `subtitle`, `cta`; `eyebrow` and `image` are always `null`) |
 
 Sections can be hidden or reordered in the admin, so never assume a fixed position.
 
@@ -448,23 +448,19 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
       "steps": [
         {
           "title": "Discover & Brief",
-          "description": "We learn about your business, audience and goals, then agree a clear brief, scope and timeline.",
-          "icon": "search"
+          "description": "We learn about your business, audience and goals, then agree a clear brief, scope and timeline."
         },
         {
           "title": "Concept & Strategy",
-          "description": "We shape the strategy and creative direction, and share concepts for your feedback before production begins.",
-          "icon": "lightbulb"
+          "description": "We shape the strategy and creative direction, and share concepts for your feedback before production begins."
         },
         {
           "title": "Production",
-          "description": "Our designers, filmmakers and developers bring the work to life, with regular check-ins along the way.",
-          "icon": "clapperboard"
+          "description": "Our designers, filmmakers and developers bring the work to life, with regular check-ins along the way."
         },
         {
           "title": "Launch & Grow",
-          "description": "We launch, measure performance and refine, so your brand keeps growing after go-live.",
-          "icon": "rocket"
+          "description": "We launch, measure performance and refine, so your brand keeps growing after go-live."
         }
       ]
     },
@@ -533,7 +529,7 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
     },
     {
       "key": "contact_cta",
-      "eyebrow": "Let’s talk",
+      "eyebrow": null,
       "title": "Have a project in mind?",
       "subtitle": "Tell us what you are building. We reply within 24 hours.",
       "cta": {
@@ -735,23 +731,19 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
       "steps": [
         {
           "title": "الاكتشاف وتحديد المتطلبات",
-          "description": "نتعرّف على نشاطك التجاري وجمهورك وأهدافك، ثم نتفق على موجز واضح ونطاق عمل وجدول زمني محدد.",
-          "icon": "search"
+          "description": "نتعرّف على نشاطك التجاري وجمهورك وأهدافك، ثم نتفق على موجز واضح ونطاق عمل وجدول زمني محدد."
         },
         {
           "title": "الفكرة والاستراتيجية",
-          "description": "نضع الاستراتيجية والتوجه الإبداعي، ونعرض عليك المفاهيم الأولية لإبداء ملاحظاتك قبل بدء التنفيذ.",
-          "icon": "lightbulb"
+          "description": "نضع الاستراتيجية والتوجه الإبداعي، ونعرض عليك المفاهيم الأولية لإبداء ملاحظاتك قبل بدء التنفيذ."
         },
         {
           "title": "الإنتاج",
-          "description": "يتولى فريقنا من المصممين وصنّاع المحتوى والمطورين تنفيذ العمل، مع متابعة دورية معك في كل مرحلة.",
-          "icon": "clapperboard"
+          "description": "يتولى فريقنا من المصممين وصنّاع المحتوى والمطورين تنفيذ العمل، مع متابعة دورية معك في كل مرحلة."
         },
         {
           "title": "الإطلاق والنمو",
-          "description": "نطلق العمل ونقيس الأداء ونواصل التحسين، لتستمر علامتك في النمو بعد الإطلاق.",
-          "icon": "rocket"
+          "description": "نطلق العمل ونقيس الأداء ونواصل التحسين، لتستمر علامتك في النمو بعد الإطلاق."
         }
       ]
     },
@@ -820,7 +812,7 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
     },
     {
       "key": "contact_cta",
-      "eyebrow": "لنتحدث",
+      "eyebrow": null,
       "title": "هل لديك مشروع تفكر فيه؟",
       "subtitle": "أخبرنا عن مشروعك، وسنرد عليك خلال 24 ساعة.",
       "cta": {

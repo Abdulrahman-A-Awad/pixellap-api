@@ -53,7 +53,17 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 
 ## Admin panel (Filament)
 
-- Navigation groups (in order) live in `App\Filament\Support\NavGroup`; resources return `__(NavGroup::X)`.
+- Navigation: Dashboard + Messages ungrouped, then `App\Filament\Support\NavGroup` CONTENT (Home Page, Services, Pages),
+  SETTINGS (Site settings, Interface texts), ACCESS (Users, Roles, Activity log — in the menu for super admins only;
+  the policies are unchanged). Groups are not collapsible.
+- Stats, process steps, clients and home FAQs have NO resource: they are edited inside their home section
+  (`EditHomeSection` footer → `App\Filament\Widgets\HomeItems\*Table`: modals, drag reorder via `RevalidatesOnReorder`,
+  logged on the section). Their permissions are created by `ShieldPermissionSeeder::CUSTOM`.
+- Dashboard: `StatsOverview`, `WebsiteReadiness` (admins; checks in `App\Support\WebsiteReadiness`, cached 60 s, cleared by
+  `RevalidationService::touch()` and User saves), `LatestMessages`. Branding (logo, favicon, RH-Zak via
+  `public/fonts/rh-zak.css`, login hook views in `resources/views/filament/auth`) is set in `AdminPanelProvider`.
+- Every form field: plain-language label + helper text, both in `lang/ar.json`. Home section fields per key come from
+  `HomeSectionKey::fields()` — the form and the API hide what the website does not render.
 - Build translatable inputs with `App\Filament\Support\Fields` (`text`/`textarea`/`rich` add `dir="auto"`;
   `image`/`vectorOrImage`/`video` apply upload limits). Shared table bits: `App\Filament\Support\TableKit`.
 - Translatable resources: `use Translatable` on the resource + page concerns + `LocaleSwitcher` header action;

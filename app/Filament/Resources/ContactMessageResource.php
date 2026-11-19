@@ -6,7 +6,6 @@ namespace App\Filament\Resources;
 
 use App\Enums\ContactStatus;
 use App\Filament\Resources\ContactMessageResource\Pages;
-use App\Filament\Support\NavGroup;
 use App\Filament\Support\TableKit;
 use App\Models\ContactMessage;
 use App\Models\ServiceCategory;
@@ -38,7 +37,7 @@ class ContactMessageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __(NavGroup::INBOX);
+        return null; // top level, under the Dashboard
     }
 
     public static function getModelLabel(): string
@@ -114,8 +113,9 @@ class ContactMessageResource extends Resource
                     ->color('primary'),
                 Tables\Columns\TextColumn::make('serviceCategory.title')->label('Service')->limit(30)->placeholder('—'),
                 Tables\Columns\TextColumn::make('locale')->label('Language')->badge()->color('gray')
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state)),
-                Tables\Columns\TextColumn::make('assignee.name')->label('Assigned to')->placeholder('—')->toggleable(),
+                    ->formatStateUsing(fn (string $state): string => strtoupper($state))
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('assignee.name')->label('Assigned to')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')->label('Received')->since()->sortable()
                     ->dateTimeTooltip(),
             ])

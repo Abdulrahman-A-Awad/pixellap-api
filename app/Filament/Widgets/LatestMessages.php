@@ -11,11 +11,17 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 
+/** The 5 most recent contact messages; a row opens the message. */
 class LatestMessages extends TableWidget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = 2;
+    public const LIMIT = 5;
+
+    protected static ?int $sort = 3;
+
+    /** Rendered with the page: a lazy placeholder showed as an empty card. */
+    protected static bool $isLazy = false;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -27,16 +33,22 @@ class LatestMessages extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(ContactMessage::query()->with('serviceCategory')->latest()->limit(5))
+            // Limit through the keys (a ->limit() on the table query is dropped by Filament's count/sort).
+            ->query(fn () => ContactMessage::query()
+                ->with('serviceCategory')
+                ->whereKey(ContactMessage::query()->latest('id')->limit(self::LIMIT)->pluck('id')))
+            ->defaultSort('created_at', 'desc')
             ->paginated(false)
             ->recordUrl(fn (ContactMessage $record): string => ContactMessageResource::getUrl('view', ['record' => $record]))
             ->columns([
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge(),
                 Tables\Columns\TextColumn::make('name')->label('Name')->weight('bold'),
-                Tables\Columns\TextColumn::make('email')->label('Email'),
                 Tables\Columns\TextColumn::make('serviceCategory.title')->label('Service')->limit(30)->placeholder('—'),
                 Tables\Columns\TextColumn::make('created_at')->label('Received')->since(),
             ])
+            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateHeading(__('No messages yet'))
+            ->emptyStateDescription(__('Messages sent from the website’s contact form will appear here.'))
             ->headerActions([
                 Tables\Actions\Action::make('all')
                     ->label(__('View all'))

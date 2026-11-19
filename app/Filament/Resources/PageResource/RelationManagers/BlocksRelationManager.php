@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\PageResource\RelationManagers;
 
-use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Enums\PageBlockType;
+use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Filament\Support\Fields;
 use App\Filament\Support\TableKit;
 use Closure;
@@ -66,25 +66,29 @@ class BlocksRelationManager extends RelationManager
     {
         return $form->columns(1)->schema([
             Select::make('type')
-                ->label('Type')
+                ->label('Block type')
+                ->helperText(__('Decides the layout: text, text with photo, mission & vision, values, or a closing call-to-action.'))
                 ->options(PageBlockType::class)
                 ->required()
                 ->live()
                 ->native(false),
 
-            Fields::text('title')->label('Title'),
+            Fields::text('title')->label('Heading')
+                ->helperText(__('Optional heading shown above the block.')),
 
             Fields::textarea('body', 6)
-                ->label('Body')
+                ->label('Text')
                 ->helperText(__('Leave an empty line between paragraphs.'))
                 ->visible(self::forTypes([PageBlockType::Text, PageBlockType::ImageText, PageBlockType::Cta])),
 
             Fields::image('image')
-                ->label('Image')
+                ->label('Photo')
+                ->helperText(__('Shown beside the text. Landscape or square, at least 1200 px wide.'))
                 ->visible(self::forTypes([PageBlockType::ImageText])),
 
             Repeater::make('items')
-                ->label('Items')
+                ->label('Cards')
+                ->helperText(__('Mission & vision: exactly 2 cards. Values: 1 to 6 cards.'))
                 ->schema([
                     Fields::text('title')->label('Title')->required(),
                     Fields::textarea('text', 2)->label('Text')->required(),

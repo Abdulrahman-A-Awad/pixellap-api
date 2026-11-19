@@ -40,7 +40,8 @@ class FaqsRelationManager extends RelationManager
     {
         return $form->columns(1)->schema([
             Fields::text('question')->label('Question')->required()->maxLength(500),
-            Fields::rich('answer')->label('Answer')->required(),
+            Fields::rich('answer')->label('Answer')->required()
+                ->helperText(__('Shown when the visitor opens the question.')),
             Fields::visible(),
         ]);
     }

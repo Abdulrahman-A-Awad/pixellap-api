@@ -52,7 +52,7 @@ final class Fields
      * EN + AR inputs side by side writing {name}.en / {name}.ar
      * (for places where editors should see both languages at once).
      */
-    public static function bilingual(string $name, string $label, bool $multiline = false): Grid
+    public static function bilingual(string $name, string $label, bool $multiline = false, ?string $help = null): Grid
     {
         $make = fn (string $locale) => $multiline
             ? Textarea::make("{$name}.{$locale}")->rows(3)->autosize()
@@ -61,6 +61,7 @@ final class Fields
         return Grid::make(2)->schema([
             $make('en')
                 ->label(__($label).' — English')
+                ->helperText($help)
                 ->extraInputAttributes(['dir' => 'ltr']),
             $make('ar')
                 ->label(__($label).' — العربية')
@@ -104,6 +105,7 @@ final class Fields
     {
         return Toggle::make('is_visible')
             ->label('Visible on website')
+            ->helperText(__('Turn off to hide it on the website without deleting it.'))
             ->default(true);
     }
 }

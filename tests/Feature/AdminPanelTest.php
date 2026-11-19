@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\ContactStatus;
+use App\Enums\HomeSectionKey;
 use App\Filament\Pages\ManageSettings;
 use App\Filament\Resources\ContactMessageResource\Pages\ViewContactMessage;
 use App\Filament\Resources\ServiceCategoryResource\Pages\EditServiceCategory;
-use App\Filament\Resources\StatResource\Pages\ListStats;
 use App\Filament\Resources\UiStringResource\Pages\ManageUiStrings;
 use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Widgets\HomeItems\StatsTable;
 use App\Models\ContactMessage;
 use App\Models\Faq;
+use App\Models\HomeSection;
 use App\Models\Page;
 use App\Models\PageBlock;
 use App\Models\Service;
@@ -35,8 +37,7 @@ class AdminPanelTest extends TestCase
 
     /** Admin index paths (relative to /admin). */
     private const INDEXES = [
-        'home-sections', 'stats', 'process-steps', 'clients', 'faqs',
-        'service-categories', 'pages', 'contact-messages', 'settings',
+        'home-sections', 'service-categories', 'pages', 'contact-messages', 'settings',
         'ui-strings', 'users', 'shield/roles', 'activity-log',
     ];
 
@@ -44,11 +45,11 @@ class AdminPanelTest extends TestCase
     private const ALLOWED = [
         'super_admin' => self::INDEXES,
         'admin' => [
-            'home-sections', 'stats', 'process-steps', 'clients', 'faqs', 'service-categories', 'pages',
+            'home-sections', 'service-categories', 'pages',
             'contact-messages', 'settings', 'ui-strings', 'users', 'activity-log',
         ],
         'content_editor' => [
-            'home-sections', 'stats', 'process-steps', 'clients', 'faqs', 'service-categories', 'pages', 'ui-strings',
+            'home-sections', 'service-categories', 'pages', 'ui-strings',
         ],
         'sales' => ['contact-messages'],
     ];
@@ -114,10 +115,12 @@ class AdminPanelTest extends TestCase
             $this->assertTrue(Gate::forUser($editor)->allows('update', $record), class_basename($record).' update');
         }
 
+        // Items embedded in the home section edit page follow the same policies.
         $this->actingAs($editor);
-        Livewire::test(ListStats::class)
+        Livewire::test(StatsTable::class, ['record' => HomeSection::where('key', HomeSectionKey::Stats)->firstOrFail()])
             ->assertTableActionHidden('delete', Stat::first())
-            ->assertTableActionVisible('edit', Stat::first());
+            ->assertTableActionVisible('edit', Stat::first())
+            ->assertTableActionVisible('create');
     }
 
     public function test_content_editor_can_edit_but_not_create_interface_texts(): void
@@ -136,13 +139,14 @@ class AdminPanelTest extends TestCase
             ->get('/admin')
             ->assertOk()
             ->assertSee('Messages')
-            ->assertDontSee('Home sections')
-            ->assertDontSee('Service categories')
-            ->assertDontSee('Site settings')
+            ->assertDontSee('/admin/home-sections')
+            ->assertDontSee('/admin/service-categories')
+            ->assertDontSee('/admin/settings')
             ->assertDontSee('/admin/users') // nav link ("Users" alone matches Windows paths in Livewire snapshots)
-            // Widgets lazy-load: check which widget components are on the dashboard.
-            ->assertSee('LatestMessages')
-            ->assertDontSee('StatsOverview');
+            // Which widget components are on the dashboard.
+            ->assertSee('Latest messages')
+            ->assertDontSee('Messages this month')
+            ->assertDontSee('Website readiness');
     }
 
     public function test_sales_can_triage_a_message(): void
@@ -248,9 +252,11 @@ class AdminPanelTest extends TestCase
             ->get('/admin')
             ->assertOk()
             ->assertSee('dir="rtl"', false)
-            ->assertSee('الصفحة الرئيسية') // "Home Page" navigation group
-            ->assertSee('صندوق الوارد')    // "Inbox"
+            ->assertSee('المحتوى')         // "Content" navigation group
+            ->assertSee('الصفحة الرئيسية') // "Home Page"
+            ->assertSee('الرسائل')         // "Messages"
             ->assertSee('الصلاحيات')       // "Access" (incl. Shield roles)
+            ->assertSee('جاهزية الموقع')   // "Website readiness" widget
             ->assertDontSee('Filament Shield');
     }
 
@@ -289,12 +295,7 @@ class AdminPanelTest extends TestCase
 
         $urls = [
             '/admin',
-            '/admin/home-sections/1/edit',
-            '/admin/stats/create',
-            '/admin/stats/'.Stat::first()->id.'/edit',
-            '/admin/process-steps/1/edit',
-            '/admin/clients/create',
-            '/admin/faqs/'.Faq::forHome()->first()->id.'/edit',
+            ...HomeSection::query()->pluck('id')->map(fn (int $id): string => "/admin/home-sections/{$id}/edit")->all(),
             '/admin/service-categories/create',
             '/admin/service-categories/'.ServiceCategory::first()->id.'/edit',
             '/admin/pages/'.Page::first()->id.'/edit',

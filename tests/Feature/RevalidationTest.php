@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\HomeSectionKey;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\ServiceCategoryResource\Pages\EditServiceCategory;
 use App\Filament\Resources\ServiceCategoryResource\RelationManagers\ServicesRelationManager;
-use App\Filament\Resources\StatResource\Pages\ListStats;
+use App\Filament\Widgets\HomeItems\StatsTable;
 use App\Models\Faq;
+use App\Models\HomeSection;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Stat;
@@ -143,16 +145,22 @@ class RevalidationTest extends TestCase
         $this->assertTrue($log->subject->is($category));
     }
 
-    public function test_reordering_a_resource_list_revalidates(): void
+    public function test_reordering_home_section_items_revalidates_and_logs_on_the_section(): void
     {
         $ids = Stat::query()->ordered()->pluck('id')->reverse()->values()->map(fn ($id) => (string) $id)->all();
+        $section = HomeSection::where('key', HomeSectionKey::Stats)->firstOrFail();
 
         $this->actingAs(User::where('email', 'admin@pixellap.test')->firstOrFail());
-        Livewire::test(ListStats::class)->call('reorderTable', $ids);
+        Livewire::test(StatsTable::class, ['record' => $section])->call('reorderTable', $ids);
         $this->terminate();
 
         Http::assertSentCount(1);
         $this->assertSame([CacheTags::HOME], $this->postedTags()[0]);
+        $this->assertSame(array_map('intval', $ids), Stat::query()->ordered()->pluck('id')->all());
+
+        $log = Activity::query()->where('event', 'reordered')->sole();
+        $this->assertSame('Stat', $log->properties['attributes']['model']);
+        $this->assertTrue($log->subject->is($section));
     }
 
     public function test_refresh_action_touches_all_tags_for_admins_only(): void

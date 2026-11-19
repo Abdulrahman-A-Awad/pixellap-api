@@ -11,10 +11,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListHomeSections extends ListRecords
 {
-    use RevalidatesOnReorder;
     use ListRecords\Concerns\Translatable;
+    use RevalidatesOnReorder;
 
     protected static string $resource = HomeSectionResource::class;
+
+    public function getTitle(): string
+    {
+        return __('Home Page');
+    }
 
     protected function getHeaderActions(): array
     {

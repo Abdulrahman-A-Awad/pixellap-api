@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Jobs\RevalidateFrontend;
 use App\Support\ApiCache;
 use App\Support\CacheTags;
+use App\Support\WebsiteReadiness;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -27,6 +28,9 @@ final class RevalidationService
     /** @param  list<string>  $tags */
     public function touch(array $tags): void
     {
+        // Any content / media / setting change can change the dashboard launch checklist.
+        WebsiteReadiness::forget();
+
         foreach ($tags as $tag) {
             $this->pending[$tag] = true;
         }

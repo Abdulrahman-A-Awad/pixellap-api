@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
  * One home section, discriminated by `key`. Common fields + section-specific data:
  *  stats       → items      [{value, prefix, suffix, label}]
  *  services    → categories [{slug, title, excerpt, icon, cover, services: [title]}]
- *  process     → steps      [{title, description, icon}]
+ *  process     → steps      [{title, description}]
  *  clients     → items      [{name, url, logo}]
  *  faq         → faqs       [{id, question, answer}]
  *  contact_cta → response_time, whatsapp
@@ -39,9 +39,9 @@ class HomeSectionResource extends Resource
 
         $base = [
             'key' => $key->value,
-            'eyebrow' => self::text($section->eyebrow),
-            'title' => self::text($section->title),
-            'subtitle' => self::text($section->subtitle),
+            'eyebrow' => $key->supports('eyebrow') ? self::text($section->eyebrow) : null,
+            'title' => $key->supports('title') ? self::text($section->title) : null,
+            'subtitle' => $key->supports('subtitle') ? self::text($section->subtitle) : null,
             'cta' => $key->supports('cta') ? self::link($section->cta_label, $section->cta_url) : null,
             'cta2' => $key->supports('cta2') ? self::link($section->cta2_label, $section->cta2_url) : null,
             'image' => $key->supports('image') ? MediaResource::fromModel($section, 'image') : null,
@@ -70,7 +70,6 @@ class HomeSectionResource extends Resource
                 'steps' => $content->processSteps()->map(fn (ProcessStep $p): array => [
                     'title' => (string) $p->title,
                     'description' => (string) $p->description,
-                    'icon' => self::text($p->icon),
                 ])->all(),
             ],
             HomeSectionKey::Clients => [

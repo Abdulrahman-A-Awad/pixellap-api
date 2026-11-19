@@ -43,16 +43,20 @@ class ServicesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->columns(1)->schema([
-            Fields::text('title')->label('Title')->required(),
-            Fields::textarea('description')->label('Description')->required(),
+            Fields::text('title')->label('Title')->required()
+                ->helperText(__('Shown as the card heading on the service page.')),
+            Fields::textarea('description')->label('Description')->required()
+                ->helperText(__('Two or three sentences under the heading.')),
             TagsInput::make('features')
                 ->label('Features')
                 ->reorderable()
                 ->placeholder(__('Type a feature and press Enter'))
-                ->helperText(__('Each language has its own list — switch the language to edit the other.')),
+                ->helperText(__('Shown as a checklist. Each language has its own list — switch the language to edit the other.')),
             Grid::make(2)->schema([
-                Fields::vectorOrImage('icon', MimeTypes::ICONS)->label('Icon'),
-                Fields::image('image')->label('Image'),
+                Fields::vectorOrImage('icon', MimeTypes::ICONS)->label('Icon')
+                    ->helperText(__('Optional. SVG/PNG, square. Empty = a brand pixel icon.')),
+                Fields::image('image')->label('Photo')
+                    ->helperText(__('Optional. Landscape photo shown at the bottom of the card.')),
             ]),
             Fields::visible(),
         ]);
