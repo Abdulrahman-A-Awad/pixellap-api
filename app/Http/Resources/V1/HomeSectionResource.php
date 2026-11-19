@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
  *  clients     → items      [{name, url, logo}]
  *  faq         → faqs       [{id, question, answer}]
  *  contact_cta → response_time, whatsapp
+ *  hero        → media      {wide, vertical: {webm, mp4, poster}} (absolute URLs or null)
  * Fields a section does not use (see HomeSectionKey::fields()) are always null.
  *
  * @property HomeSection $resource
@@ -44,7 +45,6 @@ class HomeSectionResource extends Resource
             'cta' => $key->supports('cta') ? self::link($section->cta_label, $section->cta_url) : null,
             'cta2' => $key->supports('cta2') ? self::link($section->cta2_label, $section->cta2_url) : null,
             'image' => $key->supports('image') ? MediaResource::fromModel($section, 'image') : null,
-            'video' => $key->supports('video') ? MediaResource::fromModel($section, 'video') : null,
         ];
 
         return [...$base, ...match ($key) {
@@ -87,7 +87,16 @@ class HomeSectionResource extends Resource
                 'response_time' => self::text(Setting::get('response_time')),
                 'whatsapp' => self::text(Setting::get('whatsapp')),
             ],
-            HomeSectionKey::Hero, HomeSectionKey::About => [],
+            HomeSectionKey::Hero => [
+                'media' => array_map(
+                    fn (array $variant): array => array_map(
+                        fn (string $collection): ?string => $section->getFirstMedia($collection)?->getFullUrl(),
+                        $variant,
+                    ),
+                    HomeSection::HERO_MEDIA,
+                ),
+            ],
+            HomeSectionKey::About => [],
         }];
     }
 }

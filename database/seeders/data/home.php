@@ -13,7 +13,7 @@ return [
     // Keyed by App\Enums\HomeSectionKey value; sort follows the enum order.
     'sections' => [
         'hero' => [
-            'eyebrow' => ['en' => 'Creative · Media · Digital — UAE', 'ar' => 'إبداع · إعلام · رقمي — الإمارات'],
+            'eyebrow' => ['en' => 'Creative | Media | Digital — UAE', 'ar' => 'إبداع | إعلام | رقمي — الإمارات'],
             'title' => ['en' => 'Small Pixels. BIG IMPACT.', 'ar' => 'بيكسلات صغيرة. أثر كبير.'],
             'subtitle' => [
                 'en' => 'Integrated branding, media production, digital marketing and web — all under one roof.',

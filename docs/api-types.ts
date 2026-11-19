@@ -146,10 +146,8 @@ interface HomeSectionBase<K extends HomeSectionKey> {
   cta: Link | null;
   /** hero only */
   cta2: Link | null;
-  /** hero, about, contact_cta */
+  /** about, contact_cta */
   image: MediaAsset | null;
-  /** hero only */
-  video: MediaAsset | null;
 }
 
 export interface HomeStat {
@@ -182,7 +180,26 @@ export interface ClientLogo {
   logo: MediaAsset | null;
 }
 
-export type HeroSection = HomeSectionBase<'hero'>;
+/** One orientation of the hero loop video: absolute URLs, null when not uploaded. */
+export interface HeroLoopVideo {
+  /** video/webm — list first in <source>. */
+  webm: string | null;
+  /** video/mp4 (H.264) — fallback <source>. */
+  mp4: string | null;
+  /** First frame (webp/jpeg/png): the video poster and the static hero. */
+  poster: string | null;
+}
+
+export interface HeroMedia {
+  /** Desktop / landscape. */
+  wide: HeroLoopVideo;
+  /** Phones / portrait. */
+  vertical: HeroLoopVideo;
+}
+
+export interface HeroSection extends HomeSectionBase<'hero'> {
+  media: HeroMedia;
+}
 export type AboutSection = HomeSectionBase<'about'>;
 export interface StatsSection extends HomeSectionBase<'stats'> {
   items: HomeStat[];

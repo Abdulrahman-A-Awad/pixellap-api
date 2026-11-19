@@ -19,7 +19,7 @@ use Filament\Forms\Components\Toggle;
  */
 final class Fields
 {
-    public const IMAGE_MAX_KB = 5 * 1024;
+    public const IMAGE_MAX_KB = 10 * 1024;
 
     public const VIDEO_MAX_KB = 40 * 1024;
 

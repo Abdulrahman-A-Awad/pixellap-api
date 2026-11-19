@@ -15,6 +15,18 @@ use Spatie\MediaLibrary\HasMedia;
 
 class HomeSection extends Model implements HasMedia, Sortable
 {
+    /**
+     * Hero loop video variants: orientation → format → collection (one file each).
+     * Wide = desktop / landscape, vertical = phones / portrait. WebM first, MP4 fallback,
+     * poster = first frame (also the static hero).
+     *
+     * @var array<string, array<string, string>>
+     */
+    public const HERO_MEDIA = [
+        'wide' => ['webm' => 'video_wide_webm', 'mp4' => 'video_wide_mp4', 'poster' => 'poster_wide'],
+        'vertical' => ['webm' => 'video_vertical_webm', 'mp4' => 'video_vertical_mp4', 'poster' => 'poster_vertical'],
+    ];
+
     use HasWebpMedia;
     use IsContent;
     use IsSortable;
@@ -39,8 +51,21 @@ class HomeSection extends Model implements HasMedia, Sortable
 
     public function registerMediaCollections(): void
     {
+        // about / contact_cta.
         $this->addMediaCollection('image')->singleFile()->acceptsMimeTypes(MimeTypes::IMAGES);
-        $this->addMediaCollection('video')->singleFile()->acceptsMimeTypes(MimeTypes::VIDEOS);
+
+        // Hero only. Posters are small webp frames served as-is (no conversions).
+        foreach (self::HERO_MEDIA as $variant) {
+            $this->addMediaCollection($variant['webm'])->singleFile()->acceptsMimeTypes(MimeTypes::WEBM);
+            $this->addMediaCollection($variant['mp4'])->singleFile()->acceptsMimeTypes(MimeTypes::MP4);
+            $this->addMediaCollection($variant['poster'])->singleFile()->acceptsMimeTypes(MimeTypes::IMAGES);
+        }
+    }
+
+    /** @return list<string> */
+    public static function heroMediaCollections(): array
+    {
+        return array_merge(...array_map(array_values(...), array_values(self::HERO_MEDIA)));
     }
 
     protected function webpCollections(): array

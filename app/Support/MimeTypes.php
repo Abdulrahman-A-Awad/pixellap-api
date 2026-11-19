@@ -18,4 +18,8 @@ final class MimeTypes
     public const ICONS = ['image/svg+xml', 'image/png', 'image/webp'];
 
     public const VIDEOS = ['video/mp4', 'video/webm'];
+
+    public const WEBM = ['video/webm'];
+
+    public const MP4 = ['video/mp4'];
 }

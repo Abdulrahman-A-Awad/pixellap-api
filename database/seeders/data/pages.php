@@ -25,7 +25,8 @@ return [
         ],
         'blocks' => [
             [
-                'type' => 'text',
+                // Photo added by pixellap:import-media (docs/brand-identity/import-manifest.json).
+                'type' => 'image_text',
                 'title' => ['en' => 'Who we are', 'ar' => 'من نحن'],
                 'body' => [
                     'en' => "Pixellap is a creative, media and digital agency based in the UAE. We bring strategists, designers, filmmakers, marketers and developers together in one team, so our clients get joined-up thinking and consistent quality at every step.\n\nWe believe the smallest details make the biggest difference. Every pixel, frame and word is crafted with purpose — because that is how brands earn attention and trust.",

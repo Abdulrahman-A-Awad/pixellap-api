@@ -5,7 +5,6 @@
     "Inbox": "صندوق الوارد",
     "Settings": "الإعدادات",
     "Access": "الصلاحيات",
-
     "Home section": "قسم الصفحة الرئيسية",
     "Home sections": "أقسام الصفحة الرئيسية",
     "Stat": "رقم إحصائي",
@@ -34,7 +33,6 @@
     "Activity log": "سجل النشاط",
     "Role": "الدور",
     "Roles": "الأدوار",
-
     "Hero": "الواجهة الرئيسية",
     "Process": "منهجية العمل",
     "About": "من نحن",
@@ -49,12 +47,10 @@
     "In progress": "قيد المتابعة",
     "Replied": "تم الرد",
     "Closed": "مغلقة",
-
     "Super Admin": "مدير عام",
     "Admin": "مدير",
     "Content Editor": "محرر محتوى",
     "Sales": "المبيعات",
-
     "Account": "الحساب",
     "Active": "نشط",
     "Admin language": "لغة لوحة التحكم",
@@ -143,7 +139,6 @@
     "Website": "الموقع الإلكتروني",
     "When": "الوقت",
     "Mark :status": "تعيين كـ :status",
-
     "A path like /contact, an anchor like #reel, or a full URL.": "مسار مثل ‎/contact أو رابط داخلي مثل ‎#reel أو رابط كامل.",
     "Each language has its own list — switch the language to edit the other.": "لكل لغة قائمتها الخاصة — بدّل اللغة لتعديل القائمة الأخرى.",
     "Icon key used by the website, e.g. search, lightbulb, clapperboard, rocket.": "اسم الأيقونة المستخدم في الموقع، مثل: search أو lightbulb أو clapperboard أو rocket.",
@@ -162,7 +157,6 @@
     "You cannot deactivate your own account.": "لا يمكنك إيقاف حسابك الشخصي.",
     "Only a super admin can grant the super admin role.": "لا يمكن منح دور المدير العام إلا من قِبل مدير عام.",
     "group.name, e.g. nav.services. Used by the website code — do not change.": "بصيغة group.name مثل nav.services. يستخدمه كود الموقع — لا تغيّره.",
-
     "Site Name": "اسم الموقع",
     "Tagline": "الشعار النصي",
     "Showreel Url": "رابط العرض التعريفي",
@@ -198,7 +192,14 @@
     "The given data was invalid.": "البيانات المُدخلة غير صالحة.",
     "Social sharing image": "صورة المشاركة على مواقع التواصل",
     "Shown when a page is shared on social media. 1200 × 630 px, JPG or PNG.": "تظهر عند مشاركة إحدى صفحات الموقع على مواقع التواصل الاجتماعي. المقاس 1200 × 630 بكسل، بصيغة JPG أو PNG.",
-    "Poster image (first frame)": "صورة الغلاف (الإطار الأول)",
-    "Fallback loop video (mobile / low-power devices, silent, 6–10s, ≤ 3 MB, webm or mp4)": "فيديو بديل متكرر (للجوال والأجهزة محدودة الأداء، بدون صوت، من 6 إلى 10 ثوانٍ، بحد أقصى 3 ميغابايت، بصيغة WebM أو MP4)",
-    "Shown instead of the 3D scene on phones and low-power devices. Keep it silent and short.": "يُعرض بدلاً من المشهد ثلاثي الأبعاد على الهواتف والأجهزة محدودة الأداء. اجعله قصيراً وبدون صوت."
+    "Loop videos": "فيديوهات الحلقة المتكررة",
+    "Silent, 6–10 s, seamless loop. Prefer a version WITHOUT logo/text — the page already shows the headline.": "بدون صوت، من 6 إلى 10 ثوانٍ، بحلقة متصلة بلا انقطاع. يُفضَّل إصدار بدون شعار أو نص، فالصفحة تعرض العنوان الرئيسي أصلاً.",
+    "Wide (desktop)": "عريض (سطح المكتب)",
+    "Vertical (mobile)": "عمودي (الجوال)",
+    "WebM": "WebM",
+    "MP4": "MP4",
+    "Poster": "صورة الغلاف",
+    "WebM (VP9/AV1), up to 6 MB.": "بصيغة WebM (VP9/AV1)، بحد أقصى 6 ميغابايت.",
+    "MP4 (H.264), up to 6 MB.": "بصيغة MP4 (H.264)، بحد أقصى 6 ميغابايت.",
+    "First frame of the video, up to 1 MB.": "الإطار الأول من الفيديو، بحد أقصى 1 ميغابايت."
 }

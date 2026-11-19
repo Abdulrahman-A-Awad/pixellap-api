@@ -36,15 +36,6 @@ class HeroMediaAndOgImageTest extends TestCase
         return $this->getJson('/api/v1/site?locale=en', ['X-Site-Key' => self::KEY])->assertOk()->json('data');
     }
 
-    /** Smallest byte sequence that `finfo` recognises as video/mp4 (an `ftyp` box). */
-    private function fakeMp4(): UploadedFile
-    {
-        $path = tempnam(sys_get_temp_dir(), 'mp4');
-        file_put_contents($path, "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom".str_repeat("\x00", 64));
-
-        return new UploadedFile($path, 'loop.mp4', 'video/mp4', null, true);
-    }
-
     public function test_og_image_is_null_until_uploaded(): void
     {
         $this->assertArrayHasKey('og_image', $this->site()['settings']);
@@ -87,25 +78,86 @@ class HeroMediaAndOgImageTest extends TestCase
         Storage::disk('public')->assertMissing($first);
     }
 
-    public function test_home_hero_returns_poster_and_loop_video_with_mime_and_absolute_urls(): void
+    /** @return array<string, mixed> */
+    private function hero(string $locale = 'en'): array
     {
-        $hero = HomeSection::where('key', HomeSectionKey::Hero)->firstOrFail();
-        $hero->addMedia(UploadedFile::fake()->image('poster.jpg', 1600, 900))->toMediaCollection('image');
-        $hero->addMedia($this->fakeMp4())->toMediaCollection('video');
-        $this->app->terminate();
+        $sections = $this->getJson("/api/v1/home?locale={$locale}", ['X-Site-Key' => self::KEY])->assertOk()->json('data');
+
+        return collect($sections)->firstWhere('key', 'hero');
+    }
+
+    public function test_hero_media_has_both_orientations_with_null_urls_until_uploaded(): void
+    {
+        $hero = $this->hero();
+
+        $this->assertSame(
+            ['wide' => ['webm' => null, 'mp4' => null, 'poster' => null], 'vertical' => ['webm' => null, 'mp4' => null, 'poster' => null]],
+            $hero['media'],
+        );
+        $this->assertNull($hero['image']);
+        $this->assertArrayNotHasKey('video', $hero);
+        $this->assertArrayNotHasKey('media', collect($this->getJson('/api/v1/home?locale=en', ['X-Site-Key' => self::KEY])->json('data'))->firstWhere('key', 'about'));
+    }
+
+    public function test_attach_hero_media_command_fills_every_variant_with_absolute_urls(): void
+    {
+        $dir = HeroMediaFiles::folder();
+
+        $this->artisan('pixellap:attach-hero-media', ['dir' => $dir])->assertSuccessful();
 
         foreach (['en', 'ar'] as $locale) {
-            $sections = $this->getJson("/api/v1/home?locale={$locale}", ['X-Site-Key' => self::KEY])->assertOk()->json('data');
-            $heroJson = collect($sections)->firstWhere('key', 'hero');
-
-            $this->assertSame('image/jpeg', $heroJson['image']['mime']);
-            $this->assertStringStartsWith('http', $heroJson['image']['url']);
-            $this->assertSame(1600, $heroJson['image']['width']);
-            $this->assertNotNull($heroJson['image']['conversions']);
-
-            $this->assertSame('video/mp4', $heroJson['video']['mime']);
-            $this->assertStringStartsWith('http', $heroJson['video']['url']);
-            $this->assertNull($heroJson['video']['conversions']);
+            $media = $this->hero($locale)['media'];
+            foreach (['wide', 'vertical'] as $variant) {
+                $this->assertStringStartsWith('http', $media[$variant]['webm']);
+                $this->assertStringEndsWith("hero-{$variant}.webm", $media[$variant]['webm']);
+                $this->assertStringEndsWith("hero-{$variant}.mp4", $media[$variant]['mp4']);
+                $this->assertStringEndsWith("hero-{$variant}-poster.webp", $media[$variant]['poster']);
+            }
         }
+
+        // Source files are copied, never moved; running again replaces (singleFile).
+        $this->assertFileExists($dir.'/hero-wide.webm');
+        $this->artisan('pixellap:attach-hero-media', ['dir' => $dir])->assertSuccessful();
+        $hero = HomeSection::where('key', HomeSectionKey::Hero)->firstOrFail();
+        $this->assertCount(6, $hero->getMedia('*'));
+        foreach (HomeSection::heroMediaCollections() as $collection) {
+            $this->assertCount(1, $hero->getMedia($collection), $collection);
+        }
+    }
+
+    public function test_attach_hero_media_skips_files_over_the_admin_limit(): void
+    {
+        $dir = HeroMediaFiles::folder();
+        file_put_contents($dir.'/hero-wide-poster.webp', str_repeat('x', 1100 * 1024));
+
+        $this->artisan('pixellap:attach-hero-media', ['dir' => $dir])->assertSuccessful();
+
+        $this->assertNull($this->hero()['media']['wide']['poster']);
+        $this->assertNotNull($this->hero()['media']['vertical']['poster']);
+    }
+}
+
+/** Minimal files that finfo recognises as webm / mp4 / webp. */
+final class HeroMediaFiles
+{
+    public static function folder(): string
+    {
+        $dir = sys_get_temp_dir().'/hero-media-'.bin2hex(random_bytes(4));
+        mkdir($dir);
+        // EBML header with DocType "webm".
+        $webm = "\x1A\x45\xDF\xA3\x9F\x42\x86\x81\x01\x42\xF7\x81\x01\x42\xF2\x81\x04\x42\xF3\x81\x08\x42\x82\x84webm\x42\x87\x81\x04\x42\x85\x81\x02".str_repeat("\x00", 64);
+        $mp4 = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom".str_repeat("\x00", 64);
+        $poster = imagecreatetruecolor(16, 9);
+        ob_start();
+        imagewebp($poster);
+        $webp = (string) ob_get_clean();
+
+        foreach (['wide', 'vertical'] as $variant) {
+            file_put_contents("{$dir}/hero-{$variant}.webm", $webm);
+            file_put_contents("{$dir}/hero-{$variant}.mp4", $mp4);
+            file_put_contents("{$dir}/hero-{$variant}-poster.webp", $webp);
+        }
+
+        return $dir;
     }
 }

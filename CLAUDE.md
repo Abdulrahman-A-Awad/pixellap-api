@@ -95,6 +95,10 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - Commands: `pixellap:check-production` (fails on debug/secrets/default admin/TODO settings/storage link/queue tables),
   `pixellap:create-super-admin` (production has NO seeded admin — `RoleSeeder` skips it when `APP_ENV=production`),
   `pixellap:revalidate-all` (sync full refresh; deploy scripts call it).
+- Media commands (revalidate once at the end): `pixellap:attach-hero-media {dir}` (hero-{wide,vertical}.{webm,mp4} +
+  -poster.webp → the hero's `HomeSection::HERO_MEDIA` collections), `pixellap:import-media {manifest.json}` (resize to
+  2560 px long edge, WebP q82, idempotent via a source hash; see the class doc for the manifest format),
+  `pixellap:replace-middle-dots` (one-off: "·" is missing from the brand font → " | ").
 - `db:seed` in production overwrites seeded content (`updateOrCreate`): first deploy only (`deploy-api.sh --seed`).
 - Security: `SecurityHeaders` on the web group + panel; `RequireHttps` on the panel (production); trusted proxies =
   localhost only; admin login limited 5/min per email+IP (`App\Filament\Pages\Auth\Login`) on top of Filament's per-IP limit.

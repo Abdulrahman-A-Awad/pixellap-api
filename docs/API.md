@@ -231,12 +231,12 @@ site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
 ### GET /home
 
 The home page's visible sections, in order. The result is a **union discriminated by `key`**: render
-with a `switch (section.key)`. Every section has `eyebrow, title, subtitle, cta, cta2, image, video`.
+with a `switch (section.key)`. Every section has `eyebrow, title, subtitle, cta, cta2, image`.
 Fields a section type does not use are always `null`. Extra data per key:
 
 | key | Extra field(s) |
 |---|---|
-| `hero` | — (uses `cta`, `cta2`, `image`, `video`; see the hero media notes below) |
+| `hero` | `media: HeroMedia` (loop video variants; uses `cta`, `cta2`; see the hero media notes below) |
 | `stats` | `items: HomeStat[]` (`value` is a number; animate it, then wrap with `prefix`/`suffix`) |
 | `services` | `categories: HomeCategoryCard[]` (each with `services: string[]` titles for tags) |
 | `process` | `steps: ProcessStep[]` (`icon` is an icon name, e.g. `"rocket"`) |
@@ -247,14 +247,24 @@ Fields a section type does not use are always `null`. Extra data per key:
 
 Sections can be hidden or reordered in the admin, so never assume a fixed position.
 
-**Hero media.** The hero is a 3D scene in the browser. Its two media fields are its fallbacks, and both are `MediaAsset | null`:
+**Hero media.** The hero is a 3D scene in the browser; `media` holds its loop video fallbacks, shown
+instead of the scene on phones and low-power devices. Two orientations, each with three absolute URLs
+(any of them may be `null` until uploaded):
 
-- `video` is the **fallback loop video**, shown instead of the 3D scene on phones and low-power
-  devices. It is silent, 6–10 s, ≤ 3 MB (the admin enforces the size), `video/webm` or `video/mp4`;
-  check `mime`. Play it `muted playsInline loop autoPlay preload="metadata"`. `conversions` is `null`.
-- `image` is the **poster** (the first frame of the loop video). Use it as the video `poster`, as the
-  static hero for reduced motion, and as the placeholder until the 3D scene is ready. It has WebP
-  `conversions`.
+```json
+"media": {
+  "wide":     { "webm": "…/hero-wide.webm",     "mp4": "…/hero-wide.mp4",     "poster": "…/hero-wide-poster.webp" },
+  "vertical": { "webm": "…/hero-vertical.webm", "mp4": "…/hero-vertical.mp4", "poster": "…/hero-vertical-poster.webp" }
+}
+```
+
+- Pick `vertical` for `(max-width: 767px)` or portrait orientation, else `wide`.
+- Videos are silent, 6–10 s seamless loops, ≤ 6 MB each (the admin enforces it). Play them
+  `muted playsInline loop autoPlay` with `<source type="video/webm">` first, then `<source type="video/mp4">`.
+- `poster` is the first frame (≤ 1 MB, served as uploaded, no conversions): use it as the video `poster`
+  and as the static hero (reduced motion).
+- `image` is always `null` for the hero. The old `video` field was removed from every section.
+- Upload from the admin (Home sections → Hero → Loop videos) or `php artisan pixellap:attach-hero-media {dir}`.
 
 `GET /api/v1/home?locale=en`
 
@@ -264,7 +274,7 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
   "data": [
     {
       "key": "hero",
-      "eyebrow": "Creative · Media · Digital — UAE",
+      "eyebrow": "Creative | Media | Digital — UAE",
       "title": "Small Pixels. BIG IMPACT.",
       "subtitle": "Integrated branding, media production, digital marketing and web — all under one roof.",
       "cta": {
@@ -276,7 +286,10 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
         "url": "#reel"
       },
       "image": null,
-      "video": null
+      "media": {
+        "wide": { "webm": null, "mp4": null, "poster": null },
+        "vertical": { "webm": null, "mp4": null, "poster": null }
+      }
     },
     {
       "key": "stats",
@@ -286,7 +299,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "items": [
         {
           "value": 10,
@@ -325,7 +337,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       },
       "cta2": null,
       "image": null,
-      "video": null,
       "categories": [
         {
           "slug": "brand-identity-design",
@@ -434,7 +445,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "steps": [
         {
           "title": "Discover & Brief",
@@ -466,7 +476,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "items": []
     },
     {
@@ -479,8 +488,7 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
         "url": "/about"
       },
       "cta2": null,
-      "image": null,
-      "video": null
+      "image": null
     },
     {
       "key": "faq",
@@ -490,7 +498,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "faqs": [
         {
           "id": 1,
@@ -535,7 +542,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       },
       "cta2": null,
       "image": null,
-      "video": null,
       "response_time": "We reply within 24 hours.",
       "whatsapp": "TODO: +971500000000"
     }
@@ -555,7 +561,7 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
   "data": [
     {
       "key": "hero",
-      "eyebrow": "إبداع · إعلام · رقمي — الإمارات",
+      "eyebrow": "إبداع | إعلام | رقمي — الإمارات",
       "title": "بيكسلات صغيرة. أثر كبير.",
       "subtitle": "هوية بصرية وإنتاج إعلامي وتسويق رقمي وتطوير مواقع، متكاملة تحت سقف واحد.",
       "cta": {
@@ -567,7 +573,10 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
         "url": "#reel"
       },
       "image": null,
-      "video": null
+      "media": {
+        "wide": { "webm": null, "mp4": null, "poster": null },
+        "vertical": { "webm": null, "mp4": null, "poster": null }
+      }
     },
     {
       "key": "stats",
@@ -577,7 +586,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "items": [
         {
           "value": 10,
@@ -616,7 +624,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       },
       "cta2": null,
       "image": null,
-      "video": null,
       "categories": [
         {
           "slug": "brand-identity-design",
@@ -725,7 +732,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "steps": [
         {
           "title": "الاكتشاف وتحديد المتطلبات",
@@ -757,7 +763,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "items": []
     },
     {
@@ -770,8 +775,7 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
         "url": "/about"
       },
       "cta2": null,
-      "image": null,
-      "video": null
+      "image": null
     },
     {
       "key": "faq",
@@ -781,7 +785,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       "cta": null,
       "cta2": null,
       "image": null,
-      "video": null,
       "faqs": [
         {
           "id": 1,
@@ -826,7 +829,6 @@ Sections can be hidden or reordered in the admin, so never assume a fixed positi
       },
       "cta2": null,
       "image": null,
-      "video": null,
       "response_time": "نرد على جميع الاستفسارات خلال 24 ساعة.",
       "whatsapp": "TODO: +971500000000"
     }

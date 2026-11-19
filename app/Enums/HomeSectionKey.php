@@ -41,7 +41,8 @@ enum HomeSectionKey: string implements HasLabel
         $base = ['eyebrow', 'title', 'subtitle'];
 
         return match ($this) {
-            self::Hero => [...$base, 'cta', 'cta2', 'image', 'video'],
+            // Hero media = the loop video variants (HomeSection::HERO_MEDIA), not the plain image.
+            self::Hero => [...$base, 'cta', 'cta2', 'media'],
             self::Services => [...$base, 'cta'],
             self::About, self::ContactCta => [...$base, 'cta', 'image'],
             default => $base,

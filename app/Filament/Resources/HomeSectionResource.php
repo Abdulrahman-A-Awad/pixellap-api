@@ -10,6 +10,7 @@ use App\Filament\Support\Fields;
 use App\Filament\Support\NavGroup;
 use App\Filament\Support\TableKit;
 use App\Models\HomeSection;
+use App\Support\MimeTypes;
 use Closure;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Section;
@@ -29,8 +30,10 @@ class HomeSectionResource extends Resource
 {
     use Translatable;
 
-    /** The hero loop video must stay light: it replaces the 3D scene on weak devices. */
-    public const HERO_VIDEO_MAX_KB = 3 * 1024;
+    /** The hero loop videos must stay light: they replace the 3D scene on weak devices. */
+    public const HERO_VIDEO_MAX_KB = 6 * 1024;
+
+    public const HERO_POSTER_MAX_KB = 1024;
 
     protected static ?string $model = HomeSection::class;
 
@@ -107,24 +110,50 @@ class HomeSectionResource extends Resource
                 ]),
 
             Section::make(__('Media'))
-                ->columns(2)
                 ->visible(fn (?HomeSection $record): bool => (bool) $record?->key?->supports('image'))
                 ->schema([
-                    // Hero: the 3D scene's poster + the loop video used on mobile / low-power devices.
-                    Fields::image('image')
-                        ->label(fn (?HomeSection $record): string => __($record?->key === HomeSectionKey::Hero
-                            ? 'Poster image (first frame)'
-                            : 'Image')),
-                    Fields::video('video')
-                        ->label('Fallback loop video (mobile / low-power devices, silent, 6–10s, ≤ 3 MB, webm or mp4)')
-                        ->maxSize(self::HERO_VIDEO_MAX_KB)
-                        ->helperText(__('Shown instead of the 3D scene on phones and low-power devices. Keep it silent and short.'))
-                        ->visible(self::for('video')),
+                    Fields::image('image')->label('Image'),
+                ]),
+
+            // Hero only: loop videos shown instead of the 3D scene on phones / low-power devices.
+            Section::make(__('Loop videos'))
+                ->description(__('Silent, 6–10 s, seamless loop. Prefer a version WITHOUT logo/text — the page already shows the headline.'))
+                ->columns(2)
+                ->visible(fn (?HomeSection $record): bool => (bool) $record?->key?->supports('media'))
+                ->schema([
+                    self::loopVariant('wide', 'Wide (desktop)'),
+                    self::loopVariant('vertical', 'Vertical (mobile)'),
                 ]),
 
             Section::make()
                 ->schema([Fields::visible()]),
         ]);
+    }
+
+    /** WebM + MP4 + poster for one orientation of the hero loop video. */
+    private static function loopVariant(string $variant, string $label): Fieldset
+    {
+        $collections = HomeSection::HERO_MEDIA[$variant];
+
+        return Fieldset::make(__($label))
+            ->columns(1)
+            ->columnSpan(1)
+            ->schema([
+                Fields::video($collections['webm'])
+                    ->label('WebM')
+                    ->acceptedFileTypes(MimeTypes::WEBM)
+                    ->maxSize(self::HERO_VIDEO_MAX_KB)
+                    ->helperText(__('WebM (VP9/AV1), up to 6 MB.')),
+                Fields::video($collections['mp4'])
+                    ->label('MP4')
+                    ->acceptedFileTypes(MimeTypes::MP4)
+                    ->maxSize(self::HERO_VIDEO_MAX_KB)
+                    ->helperText(__('MP4 (H.264), up to 6 MB.')),
+                Fields::image($collections['poster'])
+                    ->label('Poster')
+                    ->maxSize(self::HERO_POSTER_MAX_KB)
+                    ->helperText(__('First frame of the video, up to 1 MB.')),
+            ]);
     }
 
     public static function table(Table $table): Table
