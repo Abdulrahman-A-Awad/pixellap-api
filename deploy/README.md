@@ -167,7 +167,10 @@ bash /var/www/pixellap-api/deploy/scripts/deploy-api.sh --seed
 # 2. Your admin account (production never gets the default admin@pixellap.test).
 cd /var/www/pixellap-api && php artisan pixellap:create-super-admin
 
-# 3. Website: builds from the API (a few minutes), starts it under PM2.
+# 3. Hero loop videos (clean cube cuts, kept in this repo): attaches the 6 files to the home hero.
+cd /var/www/pixellap-api && php artisan pixellap:attach-hero-media deploy/hero-media
+
+# 4. Website: builds from the API (a few minutes), starts it under PM2.
 bash /var/www/pixellap-api/deploy/scripts/deploy-web.sh
 ```
 
@@ -300,6 +303,7 @@ tar -tzf /var/backups/pixellap/storage-LATEST.tar.gz | head
 | Failed jobs | `cd /var/www/pixellap-api && php artisan queue:failed` · `php artisan queue:retry all` |
 | Refresh the whole website | `php artisan pixellap:revalidate-all` (or Admin → Dashboard → Refresh website cache) |
 | Production check | `php artisan pixellap:check-production` |
+| Re-attach the hero loop videos | `php artisan pixellap:attach-hero-media deploy/hero-media` (replaces the hero's 6 files, refreshes the site) |
 | Nginx | `sudo nginx -t` · `tail -f /var/log/nginx/pixellap.com.error.log` |
 | Changed `.env` of the API | `bash deploy/scripts/deploy-api.sh` (re-caches the config) |
 | Changed the website `.env` | `bash deploy/scripts/deploy-web.sh` (values are baked into the build) |
