@@ -11,8 +11,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListServiceCategories extends ListRecords
 {
-    use RevalidatesOnReorder;
     use ListRecords\Concerns\Translatable;
+    use RevalidatesOnReorder;
 
     protected static string $resource = ServiceCategoryResource::class;
 
