@@ -32,6 +32,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Spatie\Activitylog\Models\Activity;
 use Tests\Feature\Api\HeroMediaFiles;
 use Tests\TestCase;
 
@@ -84,23 +86,60 @@ class AdminSimplifiedPanelTest extends TestCase
         }
     }
 
-    public function test_access_group_is_shown_to_super_admins_only_but_permissions_are_unchanged(): void
+    /** Access menu per role: [Users, Activity log, Roles] in the menu. */
+    public static function accessMenu(): array
     {
-        $admin = $this->userWithRole('admin');
+        return [
+            'super_admin' => ['super_admin', true, true, true],
+            'admin' => ['admin', true, true, false],
+            'content_editor' => ['content_editor', false, false, false],
+            'sales' => ['sales', false, false, false],
+        ];
+    }
 
-        $this->actingAs($admin);
-        $this->assertFalse(UserResource::shouldRegisterNavigation());
-        $this->assertFalse(ActivityLogResource::shouldRegisterNavigation());
-        $this->assertFalse(RoleResource::canViewAny());
-        $this->get('/admin')->assertOk()->assertDontSee('/admin/activity-log')->assertDontSee('/admin/shield/roles');
+    /** Navigation is built once per boot, so each role gets its own test (first panel request). */
+    #[DataProvider('accessMenu')]
+    public function test_access_menu_follows_the_role_matrix(string $role, bool $users, bool $activity, bool $roles): void
+    {
+        $this->actingAs($role === 'super_admin' ? $this->superAdmin() : $this->userWithRole($role));
 
-        $this->actingAs($this->superAdmin());
-        $this->assertTrue(UserResource::shouldRegisterNavigation());
-        $this->assertTrue(ActivityLogResource::shouldRegisterNavigation());
-        $this->assertTrue(RoleResource::canViewAny());
+        // Filament lists a resource when the user may view it (policy viewAny).
+        $this->assertSame($users, UserResource::canViewAny());
+        $this->assertSame($activity, ActivityLogResource::canViewAny());
+        $this->assertSame($roles, RoleResource::canViewAny());
 
-        // Still allowed by the policies (e.g. through a direct link).
-        $this->actingAs($admin)->get('/admin/users')->assertOk();
+        $this->get('/admin')->assertOk(); // builds the navigation for this user
+        $nav = collect(filament()->getNavigation())
+            ->mapWithKeys(fn ($group): array => [(string) $group->getLabel() => collect($group->getItems())->map(fn ($item): string => $item->getUrl())->all()]);
+
+        $expected = array_keys(array_filter([
+            'users' => $users,
+            'shield/roles' => $roles,
+            'activity-log' => $activity,
+        ]));
+
+        if ($expected === []) {
+            $this->assertArrayNotHasKey('Access', $nav->all(), 'the Access group is hidden when it has no items');
+        } else {
+            $this->assertSame(
+                array_map(fn (string $path): string => url("/admin/{$path}"), $expected),
+                array_values($nav['Access']),
+            );
+        }
+    }
+
+    public function test_admin_activity_log_is_view_only(): void
+    {
+        $this->actingAs($this->userWithRole('admin'));
+        activity()->log('test');
+        $activity = Activity::query()->latest('id')->firstOrFail();
+
+        $this->get('/admin/activity-log')->assertOk();
+        $this->get("/admin/activity-log/{$activity->id}")->assertOk();
+        $this->assertFalse(ActivityLogResource::canCreate());
+        $this->assertFalse(ActivityLogResource::canEdit($activity));
+        $this->assertFalse(ActivityLogResource::canDelete($activity));
+        $this->assertFalse(ActivityLogResource::canDeleteAny());
     }
 
     /* ─────────────────────────── Home sections list ─────────────────────────── */

@@ -35,14 +35,6 @@ class ActivityLogResource extends Resource
         return __(NavGroup::ACCESS);
     }
 
-    /** The "Access" group is shown to super admins only (access rules stay in the policy). */
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = auth()->user();
-
-        return $user instanceof User && $user->isSuperAdmin() && parent::shouldRegisterNavigation();
-    }
-
     public static function getModelLabel(): string
     {
         return __('Activity');

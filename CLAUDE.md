@@ -54,8 +54,8 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 ## Admin panel (Filament)
 
 - Navigation: Dashboard + Messages ungrouped, then `App\Filament\Support\NavGroup` CONTENT (Home Page, Services, Pages),
-  SETTINGS (Site settings, Interface texts), ACCESS (Users, Roles, Activity log — in the menu for super admins only;
-  the policies are unchanged). Groups are not collapsible.
+  SETTINGS (Site settings, Interface texts), ACCESS (Users + Activity log (view only) for admin and super_admin, Roles for
+  super_admin only — driven purely by the policies/`canViewAny`; the group shows when any item is visible). Groups are not collapsible.
 - Stats, process steps, clients and home FAQs have NO resource: they are edited inside their home section
   (`EditHomeSection` footer → `App\Filament\Widgets\HomeItems\*Table`: modals, drag reorder via `RevalidatesOnReorder`,
   logged on the section). Their permissions are created by `ShieldPermissionSeeder::CUSTOM`.

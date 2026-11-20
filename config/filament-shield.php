@@ -4,7 +4,7 @@ return [
     'shield_resource' => [
         'should_register_navigation' => true,
         'slug' => 'shield/roles',
-        'navigation_sort' => -1,
+        'navigation_sort' => 2, // Access menu: Users (1), Roles (2), Activity log (3)
         'navigation_badge' => false,
         'navigation_group' => true,
         'sub_navigation_position' => null,
