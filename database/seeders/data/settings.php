@@ -22,7 +22,7 @@ return [
     ['key' => 'showreel_url', 'group' => 'general', 'type' => 'text', 'value' => ''],
 
     // Contact
-    ['key' => 'email', 'group' => 'contact', 'type' => 'text', 'value' => 'TODO: hello@pixellap.ae'],
+    ['key' => 'email', 'group' => 'contact', 'type' => 'text', 'value' => 'TODO: hello@ppixelmedia.com'],
     ['key' => 'phone', 'group' => 'contact', 'type' => 'text', 'value' => 'TODO: +971 4 000 0000'],
     ['key' => 'whatsapp', 'group' => 'contact', 'type' => 'text', 'value' => 'TODO: +971500000000'],
     ['key' => 'address', 'group' => 'contact', 'type' => 'translatable', 'value' => [

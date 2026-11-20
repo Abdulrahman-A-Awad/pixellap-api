@@ -99,6 +99,8 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 
 ## Production
 
+- Hosts (server 187.127.187.118): website `https://ppixelmedia.com` (www → apex), API + admin `https://api.ppixelmedia.com`.
+  The domain is ppixelmedia.com; the brand name stays "Pixellap". Nginx: `deploy/nginx/{ppixelmedia.com,api.ppixelmedia.com}.conf`.
 - Deploy kit + runbook: `deploy/README.md` (one Ubuntu 24.04 box: Nginx, PHP 8.3-FPM pool `pixellap` running as
   `deploy`, MySQL 8, PM2 for the website, queue worker = `pixellap-queue` systemd service, cron for the scheduler + backups).
   Env template: `.env.production.example`. Scripts in `deploy/scripts` must stay `shellcheck`-clean.

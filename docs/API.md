@@ -125,7 +125,7 @@ site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
       "site_name": "Pixellap",
       "tagline": "Small Pixels. BIG IMPACT.",
       "showreel_url": "",
-      "email": "TODO: hello@pixellap.ae",
+      "email": "TODO: hello@ppixelmedia.com",
       "phone": "TODO: +971 4 000 0000",
       "whatsapp": "TODO: +971500000000",
       "address": "TODO: Office address, Dubai, United Arab Emirates",

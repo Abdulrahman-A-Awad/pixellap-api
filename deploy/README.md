@@ -1,14 +1,14 @@
 # Pixellap — production deploy kit
 
-Everything needed to run **pixellap.com** (website) and **api.pixellap.com** (API + admin) on
-**one Ubuntu 24.04 server** (4 GB RAM, 2 vCPU). Follow the steps in order. Commands in grey boxes are
+Everything needed to run **ppixelmedia.com** (website; www redirects to it) and **api.ppixelmedia.com** (API + admin)
+on **one Ubuntu 24.04 server** (4 GB RAM, 2 vCPU), IP **187.127.187.118**. Follow the steps in order. Commands in grey boxes are
 copied and pasted as they are; replace only the parts written `LIKE_THIS`.
 
 ```
                     ┌────────────────────── one Ubuntu 24.04 server ──────────────────────┐
- visitors ──443──▶ │ Nginx ─┬─ pixellap.com ────▶ Next.js (PM2, 127.0.0.1:3000)          │
+ visitors ──443──▶ │ Nginx ─┬─ ppixelmedia.com ────▶ Next.js (PM2, 127.0.0.1:3000)          │
                     │        │   www → redirect          │ server-side calls               │
-                    │        └─ api.pixellap.com ──▶ PHP 8.3-FPM (Laravel, /admin) ◀──────┘
+                    │        └─ api.ppixelmedia.com ──▶ PHP 8.3-FPM (Laravel, /admin) ◀──────┘
                     │                                   │                                 │
                     │   MySQL 8 · queue worker (systemd) · cron (scheduler, backups)       │
                     └──────────────────────────────────────────────────────────────────────┘
@@ -28,7 +28,7 @@ The files in this folder:
 | File | Installed as |
 |---|---|
 | `scripts/provision.sh` | run once as root (safe to re-run) — installs and configures everything below |
-| `nginx/pixellap.com.conf`, `nginx/api.pixellap.com.conf`, `nginx/snippets/*` | `/etc/nginx/sites-available/…`, `/etc/nginx/snippets/…` |
+| `nginx/ppixelmedia.com.conf`, `nginx/api.ppixelmedia.com.conf`, `nginx/snippets/*` | `/etc/nginx/sites-available/…`, `/etc/nginx/snippets/…` |
 | `php/pixellap.ini`, `php/pool-pixellap.conf` | `/etc/php/8.3/fpm/conf.d/99-pixellap.ini`, `/etc/php/8.3/fpm/pool.d/pixellap.conf` |
 | `systemd/pixellap-queue.service` | `/etc/systemd/system/pixellap-queue.service` |
 | `cron/pixellap` | `/etc/cron.d/pixellap` (Laravel scheduler every minute + nightly backup) |
@@ -44,32 +44,32 @@ The files in this folder:
    a region close to the UAE (e.g. Frankfurt, Bahrain, Mumbai, Dubai if offered).
 2. When creating it, add **your SSH public key** (on your PC: `type %USERPROFILE%\.ssh\id_ed25519.pub`;
    if you have none, run `ssh-keygen -t ed25519` first).
-3. Write down the server's **IPv4 address** (called `SERVER_IP` below).
-4. Check you can log in: `ssh root@SERVER_IP`.
+3. The production server is **187.127.187.118** (IPv4; used in the commands below).
+4. Check you can log in: `ssh root@187.127.187.118`.
 
 ## 2. DNS records
 
-At the company that manages the `pixellap.com` domain, create:
+At the company that manages the `ppixelmedia.com` domain, create:
 
 | Type | Name | Value | TTL |
 |---|---|---|---|
-| A | `@` | `SERVER_IP` | 300 |
-| A | `www` | `SERVER_IP` | 300 |
-| A | `api` | `SERVER_IP` | 300 |
+| A | `@` | `187.127.187.118` | 300 |
+| A | `www` | `187.127.187.118` | 300 |
+| A | `api` | `187.127.187.118` | 300 |
 
 - Delete any old A/AAAA/CNAME records for `@`, `www` and `api` that point elsewhere.
 - Only add AAAA (IPv6) records if the server really has IPv6 — a wrong AAAA makes the certificates fail.
 - Keep the existing MX/TXT records (email).
 - Wait until all three names answer with your IP (usually minutes): on your PC run
-  `nslookup pixellap.com`, `nslookup www.pixellap.com`, `nslookup api.pixellap.com`.
+  `nslookup ppixelmedia.com`, `nslookup www.ppixelmedia.com`, `nslookup api.ppixelmedia.com`.
 
 ## 3. Provision the server (once)
 
 From your PC, inside the `pixellap-api` folder, copy this kit to the server and run it:
 
 ```bash
-scp -r deploy root@SERVER_IP:/root/pixellap-deploy
-ssh root@SERVER_IP
+scp -r deploy root@187.127.187.118:/root/pixellap-deploy
+ssh root@187.127.187.118
 bash /root/pixellap-deploy/scripts/provision.sh
 ```
 
@@ -104,10 +104,10 @@ exit
 As root (replace the email — Let's Encrypt writes there before a certificate expires):
 
 ```bash
-certbot certonly --webroot -w /var/www/letsencrypt --cert-name pixellap.com \
-  -d pixellap.com -d www.pixellap.com -m YOU@pixellap.com --agree-tos --no-eff-email
-certbot certonly --webroot -w /var/www/letsencrypt --cert-name api.pixellap.com \
-  -d api.pixellap.com -m YOU@pixellap.com --agree-tos --no-eff-email
+certbot certonly --webroot -w /var/www/letsencrypt --cert-name ppixelmedia.com \
+  -d ppixelmedia.com -d www.ppixelmedia.com -m YOU@ppixelmedia.com --agree-tos --no-eff-email
+certbot certonly --webroot -w /var/www/letsencrypt --cert-name api.ppixelmedia.com \
+  -d api.ppixelmedia.com -m YOU@ppixelmedia.com --agree-tos --no-eff-email
 
 # Run provision again: it now sees the certificates and switches Nginx to the real HTTPS sites.
 bash /var/www/pixellap-api/deploy/scripts/provision.sh
@@ -174,7 +174,7 @@ cd /var/www/pixellap-api && php artisan pixellap:attach-hero-media deploy/hero-m
 bash /var/www/pixellap-api/deploy/scripts/deploy-web.sh
 ```
 
-Then sign in at **https://api.pixellap.com/admin**, replace every `TODO:` setting (Settings page) and enter
+Then sign in at **https://api.ppixelmedia.com/admin**, replace every `TODO:` setting (Settings page) and enter
 the real content. Finally:
 
 ```bash
@@ -186,17 +186,17 @@ It must end with **"Production checks passed."** — otherwise it lists exactly 
 
 ## 8. Smoke test (after the first deploy and after big releases)
 
-- [ ] `https://pixellap.com` opens (EN), `https://pixellap.com/ar` opens right-to-left.
-- [ ] `http://pixellap.com`, `https://www.pixellap.com` and `http://www.pixellap.com` all end on `https://pixellap.com`.
+- [ ] `https://ppixelmedia.com` opens (EN), `https://ppixelmedia.com/ar` opens right-to-left.
+- [ ] `http://ppixelmedia.com`, `https://www.ppixelmedia.com` and `http://www.ppixelmedia.com` all end on `https://ppixelmedia.com`.
 - [ ] Services, one category page, About and Contact open in both languages; images load.
 - [ ] The 3D hero shows on a desktop browser; the showreel opens and plays.
-- [ ] `https://pixellap.com/sitemap.xml` and `/robots.txt` load and use `https://pixellap.com` URLs.
+- [ ] `https://ppixelmedia.com/sitemap.xml` and `/robots.txt` load and use `https://ppixelmedia.com` URLs.
 - [ ] Contact form: send a message → "sent" message on the page, the email arrives, the lead appears in the admin (bell icon).
 - [ ] Admin: edit a short text (e.g. a FAQ), save → the website shows it within ~10 seconds.
-- [ ] `https://api.pixellap.com/admin` shows the login page; `http://api.pixellap.com/admin` redirects to HTTPS.
-- [ ] `https://api.pixellap.com/api/v1/site` answers **401** in a browser (the API needs the site key).
-- [ ] Headers check: <https://securityheaders.com/?q=pixellap.com> shows grade A.
-- [ ] TLS check: <https://www.ssllabs.com/ssltest/analyze.html?d=pixellap.com> shows A or A+.
+- [ ] `https://api.ppixelmedia.com/admin` shows the login page; `http://api.ppixelmedia.com/admin` redirects to HTTPS.
+- [ ] `https://api.ppixelmedia.com/api/v1/site` answers **401** in a browser (the API needs the site key).
+- [ ] Headers check: <https://securityheaders.com/?q=ppixelmedia.com> shows grade A.
+- [ ] TLS check: <https://www.ssllabs.com/ssltest/analyze.html?d=ppixelmedia.com> shows A or A+.
 - [ ] `sudo systemctl status pixellap-queue` → active; `pm2 status` → `pixellap-web` online.
 - [ ] Next morning: `ls -lh /var/backups/pixellap` shows last night's two backup files.
 
@@ -205,7 +205,7 @@ It must end with **"Production checks passed."** — otherwise it lists exactly 
 After pushing to `main` on GitHub, log in and run the script of the app that changed (as deploy):
 
 ```bash
-ssh deploy@SERVER_IP
+ssh deploy@187.127.187.118
 bash /var/www/pixellap-api/deploy/scripts/deploy-api.sh    # API / admin changes
 bash /var/www/pixellap-api/deploy/scripts/deploy-web.sh    # website changes
 ```
@@ -221,7 +221,7 @@ Run workflow).
 
 1. On your PC create a key just for GitHub: `ssh-keygen -t ed25519 -N "" -f pixellap-actions`
 2. Put the public half on the server: append `pixellap-actions.pub` to `/home/deploy/.ssh/authorized_keys`.
-3. In **both** repositories → Settings → Secrets and variables → Actions, add: `HOST` = `SERVER_IP`,
+3. In **both** repositories → Settings → Secrets and variables → Actions, add: `HOST` = `187.127.187.118`,
    `USER` = `deploy`, `KEY` = the full content of the private file `pixellap-actions`.
 4. Run the workflow once by hand. To deploy automatically on every push to `main`, uncomment the `push:`
    lines at the top of `deploy.yml`.
@@ -255,7 +255,7 @@ Every night at 02:30 `scripts/backup.sh` writes to `/var/backups/pixellap/`:
 They are kept 14 days. Run one by hand at any time: `bash /var/www/pixellap-api/deploy/scripts/backup.sh`.
 
 **Copy them off the server** — a backup on the same disk does not survive a lost server. Simplest: once a
-week from your PC: `scp -r deploy@SERVER_IP:/var/backups/pixellap ./pixellap-backups`
+week from your PC: `scp -r deploy@187.127.187.118:/var/backups/pixellap ./pixellap-backups`
 (or enable your VPS provider's snapshot/backup option, or sync with `rclone` to cloud storage).
 
 ### Restore
@@ -304,7 +304,7 @@ tar -tzf /var/backups/pixellap/storage-LATEST.tar.gz | head
 | Refresh the whole website | `php artisan pixellap:revalidate-all` (or Admin → Dashboard → Refresh website cache) |
 | Production check | `php artisan pixellap:check-production` |
 | Re-attach the hero loop videos | `php artisan pixellap:attach-hero-media deploy/hero-media` (replaces the hero's 6 files, refreshes the site) |
-| Nginx | `sudo nginx -t` · `tail -f /var/log/nginx/pixellap.com.error.log` |
+| Nginx | `sudo nginx -t` · `tail -f /var/log/nginx/ppixelmedia.com.error.log` |
 | Changed `.env` of the API | `bash deploy/scripts/deploy-api.sh` (re-caches the config) |
 | Changed the website `.env` | `bash deploy/scripts/deploy-web.sh` (values are baked into the build) |
 | Firewall / bans | `sudo ufw status` · `sudo fail2ban-client status sshd` |

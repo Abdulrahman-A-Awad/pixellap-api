@@ -314,7 +314,7 @@ class AdminSimplifiedPanelTest extends TestCase
             'mail.mailers.smtp.host' => 'smtp.example.com',
         ]);
 
-        foreach (['email' => 'hello@pixellap.com', 'phone' => '+971 4 000 0000', 'whatsapp' => '971500000000',
+        foreach (['email' => 'hello@ppixelmedia.com', 'phone' => '+971 4 000 0000', 'whatsapp' => '971500000000',
             'vat_number' => '100000000000003', 'showreel_url' => 'https://vimeo.com/1', 'og_image' => 'settings/share.jpg'] as $key => $value) {
             Setting::where('key', $key)->firstOrFail()->update(['value' => $value]);
         }

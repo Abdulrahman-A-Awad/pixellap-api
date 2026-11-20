@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Baseline security headers for browser-facing (web + admin) responses.
- * HSTS is sent by Nginx (deploy/nginx/api.pixellap.com.conf), only over HTTPS.
+ * HSTS is sent by Nginx (deploy/nginx/api.ppixelmedia.com.conf), only over HTTPS.
  */
 class SecurityHeaders
 {
