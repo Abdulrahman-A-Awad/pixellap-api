@@ -1,11 +1,14 @@
 # Laravel queue worker: website revalidation, contact emails, admin notifications.
 # -> /etc/systemd/system/pixellap-queue.service (provision.sh)
-# `php artisan queue:restart` (deploy-api.sh) makes the worker exit after its current job;
-# systemd starts it again with the new code. --max-time recycles it hourly anyway.
+# deploy-api.sh runs `systemctl restart pixellap-queue` (SIGTERM: the current job finishes first),
+# so the worker runs the new code. --max-time recycles it hourly anyway.
 [Unit]
 Description=Pixellap API queue worker
 After=network.target mysql.service
 Wants=mysql.service
+# Not before the app is installed (it would crash-loop every 5 s until the first deploy).
+ConditionPathExists=/var/www/pixellap-api/.env
+ConditionPathExists=/var/www/pixellap-api/vendor/autoload.php
 
 [Service]
 Type=simple

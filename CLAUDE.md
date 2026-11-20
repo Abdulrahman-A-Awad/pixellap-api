@@ -101,6 +101,10 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 
 - Hosts (server 187.127.187.118): website `https://ppixelmedia.com` (www → apex), API + admin `https://api.ppixelmedia.com`.
   The domain is ppixelmedia.com; the brand name stays "Pixellap". Nginx: `deploy/nginx/{ppixelmedia.com,api.ppixelmedia.com}.conf`.
+- PRE-LAUNCH (until go-live): `/etc/nginx/pixellap-prelaunch/` (from `deploy/nginx/prelaunch/`) adds basic auth (user
+  `preview`) on the website and X-Robots-Tag on both sites via glob includes; go-live = delete it (runbook §13).
+  Everyday deploys from a PC: `ssh deploy@187.127.187.118 "~/deploy-web.sh"` / `"~/deploy-api.sh"`.
+  deploy has NOPASSWD sudo only for the commands in `/etc/sudoers.d/91-deploy-limited`; everything else asks for a password.
 - Deploy kit + runbook: `deploy/README.md` (one Ubuntu 24.04 box: Nginx, PHP 8.3-FPM pool `pixellap` running as
   `deploy`, MySQL 8, PM2 for the website, queue worker = `pixellap-queue` systemd service, cron for the scheduler + backups).
   Env template: `.env.production.example`. Scripts in `deploy/scripts` must stay `shellcheck`-clean.

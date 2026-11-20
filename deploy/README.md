@@ -217,13 +217,18 @@ It must end with **"Production checks passed."** — otherwise it lists exactly 
 
 ## 9. Everyday deploys
 
-After pushing to `main` on GitHub, log in and run the script of the app that changed (as deploy):
+After pushing to `main` on GitHub, run the script of the app that changed — from your PC, one line each
+(`~/deploy-web.sh` / `~/deploy-api.sh` are shortcuts in deploy's home for the scripts below):
 
 ```bash
-ssh deploy@187.127.187.118
-bash /var/www/pixellap-api/deploy/scripts/deploy-api.sh    # API / admin changes
-bash /var/www/pixellap-api/deploy/scripts/deploy-web.sh    # website changes
+ssh deploy@187.127.187.118 "~/deploy-web.sh"    # website changes (build + switch, ~2-4 min)
+ssh deploy@187.127.187.118 "~/deploy-api.sh"    # API / admin changes
+ssh deploy@187.127.187.118 "~/deploy-web.sh --rollback"   # previous website build
 ```
+
+(Long form, logged in as deploy: `bash /var/www/pixellap-api/deploy/scripts/deploy-{api,web}.sh`.
+The shortcuts are recreated with:
+`printf '#!/usr/bin/env bash\nexec bash /var/www/pixellap-api/deploy/scripts/deploy-web.sh "$@"\n' > ~/deploy-web.sh && chmod 750 ~/deploy-web.sh`, same for api.)
 
 API changes that add new UI strings to `database/seeders/data/ui_strings.php` also need
 `php artisan db:seed --class=UiStringSeeder --force && php artisan pixellap:revalidate-all`
@@ -326,3 +331,71 @@ tar -tzf /var/backups/pixellap/storage-LATEST.tar.gz | head
 
 **PHP code changes need a PHP-FPM reload** (OPcache never re-reads files): the deploy script does it; after
 a manual edit run `sudo systemctl reload php8.3-fpm`.
+
+## 13. Pre-launch mode (site private until the official launch)
+
+While the site is not launched:
+
+- **Website** asks for a login (HTTP basic auth): user `preview`, password `PREVIEW_PASSWORD` in
+  `/root/pixellap-secrets.txt` (`sudo cat /root/pixellap-secrets.txt`). `/api/revalidate` is excluded.
+- **API + admin** have no basic auth (the admin has its own login; the API needs the site key).
+- Both domains send `X-Robots-Tag: noindex, nofollow`; the website is built with `PRELAUNCH=true`
+  (robots.txt `Disallow: /`, `<meta name="robots" content="noindex, nofollow">` on every page).
+
+It all comes from `/etc/nginx/pixellap-prelaunch/` (snippets from `deploy/nginx/prelaunch/` + `htpasswd`), which
+both site configs include with a glob, and `PRELAUNCH=true` in `/var/www/pixellap-web/shared/.env.production.local`.
+
+Change the preview password (as root — `sudo -i`):
+
+```bash
+pw="$(openssl rand -base64 30 | tr -d '/+=' | cut -c1-20)"
+printf 'preview:%s\n' "$(openssl passwd -apr1 "$pw")" > /etc/nginx/pixellap-prelaunch/htpasswd
+sed -i "s/^PREVIEW_PASSWORD=.*/PREVIEW_PASSWORD=${pw}/" /root/pixellap-secrets.txt; unset pw
+nginx -t && systemctl reload nginx
+```
+
+### Go live
+
+```bash
+# 1. Remove basic auth + X-Robots-Tag (as root: sudo -i). The site configs keep working: the globs match nothing.
+rm -rf /etc/nginx/pixellap-prelaunch
+nginx -t && systemctl reload nginx
+
+# 2. Normal SEO in the website build (as deploy).
+sed -i 's/^PRELAUNCH=.*/PRELAUNCH=false/' /var/www/pixellap-web/shared/.env.production.local
+~/deploy-web.sh
+
+# 3. Check: robots.txt allows the site and lists the sitemap; no noindex anywhere.
+curl -s https://ppixelmedia.com/robots.txt
+curl -sI https://ppixelmedia.com/en | grep -i x-robots     # → nothing
+curl -s https://ppixelmedia.com/en | grep -o '<meta name="robots"[^>]*>'   # → nothing
+```
+
+4. Google Search Console → add the **domain** property `ppixelmedia.com` (DNS TXT record) → Sitemaps →
+   submit `https://ppixelmedia.com/sitemap.xml`. Also replace the `TODO:` settings and set up SMTP (below) first.
+
+## 14. Email (SMTP) later
+
+Until SMTP is configured, `MAIL_MAILER=log`: contact-form leads are saved and visible in the admin inbox, but no
+email is sent. To turn emails on, as deploy edit `/var/www/pixellap-api/.env`:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp            # port 587 = STARTTLS; use smtps with port 465
+MAIL_HOST=smtp.your-provider.com
+MAIL_PORT=587
+MAIL_USERNAME=...
+MAIL_PASSWORD=...
+MAIL_FROM_ADDRESS="no-reply@ppixelmedia.com"   # must be allowed by SPF/DKIM on ppixelmedia.com
+CONTACT_NOTIFY_EMAIL=you@ppixelmedia.com        # fallback recipient (Admin → Settings → email wins)
+```
+
+Then reload the config (config cache, PHP-FPM, queue worker):
+
+```bash
+~/deploy-api.sh
+```
+
+Send a test lead through the contact form; `pixellap:check-production` stops warning about the mailer.
+New-lead **bell notifications** go to users with the `admin` or `sales` role (not to super admins) —
+create such a user in Admin → Users if you want them.

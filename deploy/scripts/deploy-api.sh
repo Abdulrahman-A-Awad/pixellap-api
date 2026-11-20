@@ -81,7 +81,8 @@ fi
 
 step "Reloading PHP-FPM (OPcache) and the queue worker"
 sudo -n systemctl reload "${PHP_FPM_SERVICE}"
-artisan queue:restart
+# Graceful (SIGTERM: the current job finishes first); also starts the worker after the first install.
+sudo -n systemctl restart pixellap-queue
 
 step "Production checks"
 if ! artisan pixellap:check-production; then
