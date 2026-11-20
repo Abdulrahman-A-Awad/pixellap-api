@@ -21,14 +21,14 @@ copied and pasted as they are; replace only the parts written `LIKE_THIS`.
 | Website settings | `/var/www/pixellap-web/shared/.env.production.local` |
 | Logs | `/var/log/pixellap/` (queue, PHP, website, backups) · `/var/www/pixellap-api/storage/logs/` (Laravel) · `/var/log/nginx/` |
 | Backups | `/var/backups/pixellap/` (14 days) |
-| Database password | `/root/pixellap-mysql.txt` |
+| Generated secrets (deploy sudo password, database password) | `/root/pixellap-secrets.txt` (root only: `sudo cat /root/pixellap-secrets.txt`) |
 
 The files in this folder:
 
 | File | Installed as |
 |---|---|
 | `scripts/provision.sh` | run once as root (safe to re-run) — installs and configures everything below |
-| `nginx/ppixelmedia.com.conf`, `nginx/api.ppixelmedia.com.conf`, `nginx/snippets/*` | `/etc/nginx/sites-available/…`, `/etc/nginx/snippets/…` |
+| `nginx/ppixelmedia.com.conf`, `nginx/api.ppixelmedia.com.conf`, `nginx/pixellap-default.conf` (IP / unknown hosts → 444), `nginx/snippets/*` | `/etc/nginx/sites-available/…`, `/etc/nginx/snippets/…` |
 | `php/pixellap.ini`, `php/pool-pixellap.conf` | `/etc/php/8.3/fpm/conf.d/99-pixellap.ini`, `/etc/php/8.3/fpm/pool.d/pixellap.conf` |
 | `systemd/pixellap-queue.service` | `/etc/systemd/system/pixellap-queue.service` |
 | `cron/pixellap` | `/etc/cron.d/pixellap` (Laravel scheduler every minute + nightly backup) |
@@ -73,10 +73,28 @@ ssh root@187.127.187.118
 bash /root/pixellap-deploy/scripts/provision.sh
 ```
 
-It takes 5–10 minutes and installs: Nginx (+ brotli if available), PHP 8.3-FPM with all extensions (intl, gd…),
-MySQL 8 (database `pixellap` + user, password saved in `/root/pixellap-mysql.txt`), Composer, Node.js 22 LTS + PM2,
-certbot, git, UFW (ports 22, 80, 443 only), fail2ban, a 2 GB swap file, the `deploy` user (same SSH keys as root),
-the queue worker service, cron jobs, log rotation and a temporary web page for Let's Encrypt.
+It takes 5–10 minutes and installs: Nginx (+ brotli if available; requests by IP get nothing), PHP 8.3-FPM with all
+extensions (intl, gd…), MySQL 8 (secured, localhost only; database `pixellap` + user), Composer, Node.js 22 LTS + PM2,
+certbot (+ nginx plugin), git, ffmpeg, UFW (ports 22, 80, 443 only), fail2ban, a 2 GB swap file, automatic security
+updates, time zone Asia/Dubai, the `deploy` user (same SSH keys as root, sudo with a password), the queue worker
+service, cron jobs, log rotation and a temporary web page for Let's Encrypt. Generated passwords go to
+`/root/pixellap-secrets.txt` (never printed).
+
+**Then lock SSH down** (key-only, no root login) — in a **second** terminal, keep the root one open:
+
+```bash
+ssh deploy@187.127.187.118          # must log in
+sudo -v                             # must accept DEPLOY_SUDO_PASSWORD (from: cat /root/pixellap-secrets.txt as root)
+```
+
+Only when both work, back in the root terminal:
+
+```bash
+HARDEN_SSH=1 bash /root/pixellap-deploy/scripts/provision.sh
+```
+
+From now on log in as `deploy` and use `sudo` for root commands (`ssh root@…` is refused). Lost access? The
+provider's web console (hPanel → VPS → Browser terminal) still accepts root with its password.
 
 At the end it prints **two GitHub deploy keys**. Add each to its repository (read-only):
 GitHub → repository → **Settings → Deploy keys → Add deploy key** → paste → *Allow write access* **off**.
@@ -88,20 +106,18 @@ GitHub → repository → **Settings → Deploy keys → Add deploy key** → pa
 
 ## 4. Clone both repositories
 
-Still logged in as root, switch to the deploy user (all app commands from now on run as `deploy`):
+Logged in as `deploy` (`ssh deploy@187.127.187.118`; all app commands run as `deploy`):
 
 ```bash
-sudo -iu deploy
 git clone git@github-pixellap-api:Abdulrahman-A-Awad/pixellap-api.git /var/www/pixellap-api
 git clone git@github-pixellap-web:Abdulrahman-A-Awad/pixellap-web.git /var/www/pixellap-web/repo
-exit
 ```
 
 `github-pixellap-api` / `github-pixellap-web` are not typos: they pick the right deploy key (see `~/.ssh/config`).
 
 ## 5. HTTPS certificates (Let's Encrypt)
 
-As root (replace the email — Let's Encrypt writes there before a certificate expires):
+As root — `sudo -i` from the deploy login (replace the email — Let's Encrypt writes there before a certificate expires):
 
 ```bash
 certbot certonly --webroot -w /var/www/letsencrypt --cert-name ppixelmedia.com \
@@ -123,13 +139,12 @@ Create two random secrets and keep this terminal open — both apps need the **s
 ```bash
 openssl rand -hex 32   # → SITE_KEY
 openssl rand -hex 32   # → REVALIDATE_SECRET
-cat /root/pixellap-mysql.txt   # → database password
+sudo cat /root/pixellap-secrets.txt   # → DB_PASSWORD
 ```
 
 **API** (as deploy):
 
 ```bash
-sudo -iu deploy
 cd /var/www/pixellap-api
 cp .env.production.example .env
 chmod 600 .env

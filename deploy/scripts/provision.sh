@@ -10,8 +10,13 @@
 #
 # Optional environment variables:
 #   DEPLOY_USER=deploy           Linux user that owns and runs both apps
-#   DISABLE_SSH_PASSWORD=1       Turn off SSH password logins (only after you
-#                                confirmed key login works for root/deploy)
+#   SERVER_HOSTNAME=ppixelmedia  Hostname to set
+#   HARDEN_SSH=1                 Key-only SSH, no root login, MaxAuthTries 3.
+#                                ONLY after you proved `ssh deploy@SERVER` + sudo
+#                                work in a second terminal (keep the root one open).
+#
+# Generated secrets (deploy's sudo password, MySQL password) are written to
+# /root/pixellap-secrets.txt (chmod 600) and never printed.
 # =============================================================================
 set -Eeuo pipefail
 trap 'echo "✗ provision.sh failed at line $LINENO" >&2' ERR
@@ -30,9 +35,18 @@ PHP_VERSION=8.3
 NODE_MAJOR=22
 DB_NAME=pixellap
 DB_USER=pixellap
-DB_CREDENTIALS=/root/pixellap-mysql.txt
+SECRETS=/root/pixellap-secrets.txt
+SERVER_HOSTNAME="${SERVER_HOSTNAME:-ppixelmedia}"
 
 step() { printf '\n\033[1;35m==> %s\033[0m\n' "$*"; }
+# Appends KEY=value to the secrets file (root only) unless KEY is already there.
+secret_set() {
+    umask 077
+    touch "${SECRETS}"
+    chmod 600 "${SECRETS}"
+    grep -q "^$1=" "${SECRETS}" || printf '%s=%s\n' "$1" "$2" >> "${SECRETS}"
+    umask 022
+}
 note() { printf '    %s\n' "$*"; }
 warn() { printf '\033[1;33m    ! %s\033[0m\n' "$*"; }
 
@@ -46,16 +60,35 @@ export DEBIAN_FRONTEND=noninteractive
 # -----------------------------------------------------------------------------
 step "System packages"
 apt-get update -q
-apt-get upgrade -yq
+# Keep existing config files on upgrades (never prompt).
+apt-get full-upgrade -yq -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
 apt-get install -yq \
     ca-certificates curl gnupg git unzip rsync acl logrotate cron \
     ufw fail2ban unattended-upgrades \
-    nginx certbot \
+    nginx certbot python3-certbot-nginx ffmpeg \
     mysql-server \
     "php${PHP_VERSION}-fpm" "php${PHP_VERSION}-cli" "php${PHP_VERSION}-mysql" "php${PHP_VERSION}-mbstring" \
     "php${PHP_VERSION}-xml" "php${PHP_VERSION}-curl" "php${PHP_VERSION}-zip" "php${PHP_VERSION}-gd" \
     "php${PHP_VERSION}-intl" "php${PHP_VERSION}-bcmath" "php${PHP_VERSION}-opcache" "php${PHP_VERSION}-readline" \
     jpegoptim optipng pngquant gifsicle webp
+
+# -----------------------------------------------------------------------------
+step "Time zone, hostname, automatic security updates"
+timedatectl set-timezone Asia/Dubai
+hostnamectl set-hostname "${SERVER_HOSTNAME}"
+if grep -q '^127\.0\.1\.1' /etc/hosts; then
+    sed -i "s/^127\.0\.1\.1.*/127.0.1.1 ${SERVER_HOSTNAME}/" /etc/hosts
+else
+    echo "127.0.1.1 ${SERVER_HOSTNAME}" >> /etc/hosts
+fi
+# Cloud images reset the hostname at boot unless told not to.
+if [[ -d /etc/cloud/cloud.cfg.d ]]; then
+    printf 'preserve_hostname: true\n' > /etc/cloud/cloud.cfg.d/99-pixellap-hostname.cfg
+fi
+printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "1";\nAPT::Periodic::AutocleanInterval "7";\n' \
+    > /etc/apt/apt.conf.d/20auto-upgrades
+systemctl enable --now unattended-upgrades >/dev/null 2>&1
+note "$(hostname), $(date '+%Z'), unattended-upgrades $(systemctl is-active unattended-upgrades)"
 
 # Brotli is optional: the Nginx site configs include its snippet only when the module exists.
 if apt-get install -yq libnginx-mod-http-brotli-filter libnginx-mod-http-brotli-static; then
@@ -104,6 +137,15 @@ sysctl -q --system
 step "Deploy user '${DEPLOY_USER}'"
 if ! id -u "${DEPLOY_USER}" >/dev/null 2>&1; then
     adduser --disabled-password --gecos "" "${DEPLOY_USER}"
+fi
+# Full sudo WITH a password (the apps run as this user: an app bug must not become root).
+# The few commands the deploy scripts need are passwordless (sudoers/pixellap-deploy).
+usermod -aG sudo "${DEPLOY_USER}"
+if ! grep -q '^DEPLOY_SUDO_PASSWORD=' "${SECRETS}" 2>/dev/null; then
+    deploy_password="$(openssl rand -base64 32 | tr -d '/+=' | cut -c1-24)"
+    echo "${DEPLOY_USER}:${deploy_password}" | chpasswd
+    secret_set DEPLOY_SUDO_PASSWORD "${deploy_password}"
+    note "sudo password for ${DEPLOY_USER} saved in ${SECRETS}."
 fi
 install -d -m 700 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" "${DEPLOY_HOME}/.ssh"
 # Let the same SSH keys that log in as root log in as the deploy user (first run only).
@@ -161,6 +203,14 @@ collation-server = utf8mb4_unicode_ci
 EOF
 systemctl enable --now mysql
 systemctl restart mysql
+# mysql_secure_installation equivalent: root only via the local socket, no anonymous users, no test DB.
+mysql <<'EOF'
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+EOF
 if ! mysql -NBe "SELECT 1 FROM mysql.user WHERE user='${DB_USER}' AND host='localhost'" | grep -q 1; then
     db_password="$(openssl rand -hex 24)"
     mysql <<EOF
@@ -169,12 +219,12 @@ CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${db_password}';
 GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 EOF
-    umask 077
-    printf 'DB_DATABASE=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' "${DB_NAME}" "${DB_USER}" "${db_password}" > "${DB_CREDENTIALS}"
-    umask 022
-    note "Database '${DB_NAME}' and user '${DB_USER}' created. Credentials: ${DB_CREDENTIALS}"
+    secret_set DB_DATABASE "${DB_NAME}"
+    secret_set DB_USERNAME "${DB_USER}"
+    secret_set DB_PASSWORD "${db_password}"
+    note "Database '${DB_NAME}' and user '${DB_USER}' created. Credentials: ${SECRETS}"
 else
-    note "MySQL user '${DB_USER}' already exists (credentials in ${DB_CREDENTIALS})."
+    note "MySQL user '${DB_USER}' already exists (credentials in ${SECRETS})."
 fi
 
 # -----------------------------------------------------------------------------
@@ -239,11 +289,22 @@ EOF
 systemctl enable fail2ban >/dev/null
 systemctl restart fail2ban
 
-if [[ "${DISABLE_SSH_PASSWORD:-0}" == "1" ]]; then
-    step "SSH: key-only logins"
-    printf 'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n' > /etc/ssh/sshd_config.d/99-pixellap.conf
+if [[ "${HARDEN_SSH:-0}" == "1" ]]; then
+    step "SSH: key-only, no root login"
+    # Never lock everyone out: the deploy user must have a key and sudo first.
+    [[ -s "${DEPLOY_HOME}/.ssh/authorized_keys" ]] || { echo "No SSH key for ${DEPLOY_USER}: not hardening SSH." >&2; exit 1; }
+    id -nG "${DEPLOY_USER}" | grep -qw sudo || { echo "${DEPLOY_USER} is not in the sudo group: not hardening SSH." >&2; exit 1; }
+    # 00- on purpose: sshd keeps the FIRST value it reads, and the cloud image's
+    # 50-cloud-init.conf sets PasswordAuthentication yes.
+    printf '# Managed by provision.sh\nPermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nMaxAuthTries 3\n' \
+        > /etc/ssh/sshd_config.d/00-pixellap.conf
+    rm -f /etc/ssh/sshd_config.d/99-pixellap.conf
+    if [[ -f /etc/ssh/sshd_config.d/50-cloud-init.conf ]]; then
+        sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config.d/50-cloud-init.conf
+    fi
     sshd -t
     systemctl reload ssh
+    sshd -T | grep -E '^(permitrootlogin|passwordauthentication|maxauthtries) ' | sed 's/^/    /'
 fi
 
 # -----------------------------------------------------------------------------
@@ -258,6 +319,9 @@ else
     rm -f /etc/nginx/snippets/pixellap-brotli.conf
 fi
 rm -f /etc/nginx/sites-enabled/default
+# Catch-all default server: requests by IP or for unknown hosts get nothing (444 / TLS handshake refused).
+install -m 644 "${KIT_DIR}/nginx/pixellap-default.conf" /etc/nginx/sites-available/pixellap-default.conf
+ln -sfn /etc/nginx/sites-available/pixellap-default.conf /etc/nginx/sites-enabled/pixellap-default.conf
 
 if [[ -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" && -f "/etc/letsencrypt/live/${API_DOMAIN}/fullchain.pem" ]]; then
     for site in "${DOMAIN}.conf" "${API_DOMAIN}.conf"; do
