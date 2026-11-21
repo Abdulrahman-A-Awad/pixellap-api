@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Filament\Support;
 
 use App\Support\MimeTypes;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
 
 /**
  * Field factories that apply project-wide admin conventions:
@@ -49,24 +51,50 @@ final class Fields
     }
 
     /**
-     * EN + AR inputs side by side writing {name}.en / {name}.ar
-     * (for places where editors should see both languages at once).
+     * EN + AR inputs side by side writing {name}.en / {name}.ar — used for EVERY translatable field
+     * (no language switcher: an empty Arabic value used to show the English text silently).
+     * English is required when `$required`; an empty Arabic value only shows a warning hint.
+     *
+     * @param  'text'|'textarea'|'rich'  $kind
      */
-    public static function bilingual(string $name, string $label, bool $multiline = false, ?string $help = null): Grid
-    {
-        $make = fn (string $locale) => $multiline
-            ? Textarea::make("{$name}.{$locale}")->rows(3)->autosize()
-            : TextInput::make("{$name}.{$locale}")->maxLength(500);
+    public static function bilingual(
+        string $name,
+        string $label,
+        string $kind = 'text',
+        ?string $help = null,
+        bool $required = false,
+        int $maxLength = 500,
+    ): Grid {
+        $make = fn (string $locale): Field => match ($kind) {
+            'textarea' => Textarea::make("{$name}.{$locale}")->rows(3)->autosize(),
+            'rich' => RichEditor::make("{$name}.{$locale}")->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
+            default => TextInput::make("{$name}.{$locale}")->maxLength($maxLength),
+        };
 
-        return Grid::make(2)->schema([
+        return Grid::make(['default' => 1, 'md' => 2])->schema([
             $make('en')
                 ->label(__($label).' — English')
                 ->helperText($help)
-                ->extraInputAttributes(['dir' => 'ltr']),
+                ->required($required)
+                ->validationAttribute(__($label).' (English)')
+                ->extraInputAttributes(['dir' => 'ltr', 'lang' => 'en']),
             $make('ar')
                 ->label(__($label).' — العربية')
-                ->extraInputAttributes(['dir' => 'rtl']),
+                ->live(onBlur: true)
+                // Not blocking: the website falls back to English, but editors should see the gap.
+                ->hint(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? __('Arabic missing') : null)
+                ->hintIcon(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? 'heroicon-m-exclamation-triangle' : null)
+                ->hintColor('warning')
+                ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
         ]);
+    }
+
+    /** Arabic is empty while English has text (both empty = nothing to translate yet). */
+    public static function arabicMissing(mixed $ar, mixed $en): bool
+    {
+        $blank = fn (mixed $v): bool => trim(strip_tags((string) (is_string($v) ? $v : ''))) === '';
+
+        return $blank($ar) && ! $blank($en);
     }
 
     /** Raster image upload with editor + preview. */

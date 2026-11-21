@@ -21,8 +21,10 @@ return [
             ],
             'cta_label' => ['en' => 'Start a project', 'ar' => 'ابدأ مشروعك'],
             'cta_url' => '/contact',
-            'cta2_label' => ['en' => 'Watch the reel', 'ar' => 'شاهد العرض التعريفي'],
-            'cta2_url' => '#reel',
+            // The headline is the tagline setting (no hero title); the reel button is automatic
+            // (Settings → showreel link), so button 2 is a normal link.
+            'cta2_label' => ['en' => 'Explore our services', 'ar' => 'استكشف خدماتنا'],
+            'cta2_url' => '/services',
         ],
         'stats' => [
             'eyebrow' => ['en' => 'By the numbers', 'ar' => 'أرقامنا'],
@@ -47,7 +49,7 @@ return [
             'title' => ['en' => 'Brands we have worked with.', 'ar' => 'علامات تجارية عملنا معها.'],
         ],
         'about' => [
-            'eyebrow' => ['en' => 'About Pixellap', 'ar' => 'عن Pixellap'],
+            'eyebrow' => ['en' => 'About Pixellap', 'ar' => 'عن بكسل لاب'],
             'title' => ['en' => 'A UAE agency built on craft and clarity.', 'ar' => 'وكالة إماراتية تقوم على الإتقان والوضوح.'],
             'subtitle' => [
                 'en' => 'We are strategists, designers, filmmakers and marketers helping brands across the GCC look sharper, speak clearer and grow faster.',
@@ -118,7 +120,7 @@ return [
     // Home page FAQs (service_category_id = null)
     'faqs' => [
         [
-            'question' => ['en' => 'What services does Pixellap offer?', 'ar' => 'ما الخدمات التي تقدمها Pixellap؟'],
+            'question' => ['en' => 'What services does Pixellap offer?', 'ar' => 'ما الخدمات التي تقدمها بكسل لاب؟'],
             'answer' => [
                 'en' => 'We offer six integrated disciplines: brand identity and design, media and content production, digital marketing, web design and development, creative and AI solutions, and training and workshops. You can work with us on a single project or as a full-service partner.',
                 'ar' => 'نقدم ستة تخصصات متكاملة: بناء الهوية البصرية والتصميم، وإنتاج المحتوى المرئي والمسموع، والتسويق الرقمي، وتصميم المواقع الإلكترونية وتطويرها، والحلول الإبداعية المدعومة بالذكاء الاصطناعي، والتدريب وورش العمل. ويمكنك التعاون معنا في مشروع واحد أو اعتمادنا شريكاً متكاملاً.',

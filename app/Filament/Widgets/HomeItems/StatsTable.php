@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace App\Filament\Widgets\HomeItems;
 
 use App\Filament\Support\Fields;
+use App\Filament\Support\TableKit;
 use App\Models\Stat;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
-use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Tables;
 
 /** "Numbers" section items. */
 class StatsTable extends HomeItemsTable
 {
-    use Translatable;
-
     protected function model(): string
     {
         return Stat::class;
@@ -36,11 +34,6 @@ class StatsTable extends HomeItemsTable
         return 'Numbers';
     }
 
-    protected function extraHeaderActions(): array
-    {
-        return [Tables\Actions\LocaleSwitcher::make()];
-    }
-
     protected function columns(): array
     {
         return [
@@ -49,7 +42,7 @@ class StatsTable extends HomeItemsTable
                 ->state(fn (Stat $record): string => $record->prefix.number_format($record->value).$record->suffix)
                 ->extraAttributes(['dir' => 'ltr'])
                 ->weight('bold'),
-            Tables\Columns\TextColumn::make('label')->label('Label'),
+            ...TableKit::bilingualColumns('label', 'Label'),
         ];
     }
 
@@ -64,8 +57,7 @@ class StatsTable extends HomeItemsTable
                 TextInput::make('suffix')->label('After the number')->maxLength(10)->placeholder('+')
                     ->helperText(__('Optional, e.g. + or %.')),
             ]),
-            Fields::text('label')->label('Label')->required()
-                ->helperText(__('Short text under the number, e.g. “Projects delivered”.')),
+            Fields::bilingual('label', 'Label', help: __('Short text under the number, e.g. “Projects delivered”.'), required: true, maxLength: 255),
             Fields::visible(),
         ];
     }

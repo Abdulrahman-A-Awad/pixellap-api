@@ -29,7 +29,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'Brand Identity & Design Agency in the UAE | Pixellap',
-            'ar' => 'تصميم الهوية البصرية في الإمارات | Pixellap',
+            'ar' => 'تصميم الهوية البصرية في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'Brand strategy, logo design, visual identity and packaging for businesses across the UAE and GCC.',
@@ -146,7 +146,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'Video & Content Production Company in the UAE | Pixellap',
-            'ar' => 'شركة إنتاج فيديو ومحتوى في الإمارات | Pixellap',
+            'ar' => 'شركة إنتاج فيديو ومحتوى في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'Commercial and corporate video, photography, podcasts and motion graphics produced in the UAE.',
@@ -285,7 +285,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'Digital Marketing Agency in the UAE | Pixellap',
-            'ar' => 'وكالة تسويق رقمي في الإمارات | Pixellap',
+            'ar' => 'وكالة تسويق رقمي في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'Social media management, paid advertising, influencer marketing and performance reporting across the UAE and GCC.',
@@ -413,7 +413,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'Web Design & Development Company in the UAE | Pixellap',
-            'ar' => 'تصميم وتطوير المواقع الإلكترونية في الإمارات | Pixellap',
+            'ar' => 'تصميم وتطوير المواقع الإلكترونية في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'Bilingual corporate websites, e-commerce stores and landing pages, designed and developed in the UAE.',
@@ -530,7 +530,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'AI Content & Creative Solutions in the UAE | Pixellap',
-            'ar' => 'حلول المحتوى الإبداعي بالذكاء الاصطناعي في الإمارات | Pixellap',
+            'ar' => 'حلول المحتوى الإبداعي بالذكاء الاصطناعي في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'AI image generation, AI video, visual effects and creative campaign concepts for brands in the UAE and GCC.',
@@ -636,7 +636,7 @@ return [
         ],
         'seo_title' => [
             'en' => 'Content Creation & Media Training in the UAE | Pixellap',
-            'ar' => 'التدريب على صناعة المحتوى والإعلام في الإمارات | Pixellap',
+            'ar' => 'التدريب على صناعة المحتوى والإعلام في الإمارات | بكسل لاب',
         ],
         'seo_description' => [
             'en' => 'Hands-on workshops in content creation, photography, video editing, AI tools and corporate media for teams in the UAE.',

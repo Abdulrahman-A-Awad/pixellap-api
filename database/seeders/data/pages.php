@@ -13,15 +13,15 @@ declare(strict_types=1);
 return [
 
     'about' => [
-        'title' => ['en' => 'About Pixellap', 'ar' => 'عن Pixellap'],
+        'title' => ['en' => 'About Pixellap', 'ar' => 'عن بكسل لاب'],
         'subtitle' => [
             'en' => 'A creative, media and digital agency built in the UAE.',
             'ar' => 'وكالة إبداعية للإعلام والتسويق الرقمي، انطلقت من دولة الإمارات.',
         ],
-        'seo_title' => ['en' => 'About Us | Pixellap', 'ar' => 'من نحن | Pixellap'],
+        'seo_title' => ['en' => 'About Us | Pixellap', 'ar' => 'من نحن | بكسل لاب'],
         'seo_description' => [
             'en' => 'Meet Pixellap, a UAE creative agency bringing branding, media production, digital marketing and web together under one roof.',
-            'ar' => 'تعرّف على Pixellap، الوكالة الإبداعية الإماراتية التي تجمع الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع تحت سقف واحد.',
+            'ar' => 'تعرّف على بكسل لاب، الوكالة الإبداعية الإماراتية التي تجمع الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع تحت سقف واحد.',
         ],
         'blocks' => [
             [
@@ -30,7 +30,7 @@ return [
                 'title' => ['en' => 'Who we are', 'ar' => 'من نحن'],
                 'body' => [
                     'en' => "Pixellap is a creative, media and digital agency based in the UAE. We bring strategists, designers, filmmakers, marketers and developers together in one team, so our clients get joined-up thinking and consistent quality at every step.\n\nWe believe the smallest details make the biggest difference. Every pixel, frame and word is crafted with purpose — because that is how brands earn attention and trust.",
-                    'ar' => "Pixellap وكالة إبداعية متخصصة في الإعلام والتسويق الرقمي، مقرها دولة الإمارات العربية المتحدة. نجمع الاستراتيجيين والمصممين وصنّاع الأفلام والمسوّقين والمطورين في فريق واحد، ليحظى عملاؤنا برؤية متكاملة وجودة ثابتة في كل مرحلة.\n\nنؤمن بأن أدق التفاصيل تصنع الفارق الأكبر؛ لذلك نصنع كل بيكسل وكل لقطة وكل كلمة بهدف واضح، فهكذا تكسب العلامات التجارية الاهتمام والثقة.",
+                    'ar' => "بكسل لاب وكالة إبداعية متخصصة في الإعلام والتسويق الرقمي، مقرها دولة الإمارات العربية المتحدة. نجمع الاستراتيجيين والمصممين وصنّاع الأفلام والمسوّقين والمطورين في فريق واحد، ليحظى عملاؤنا برؤية متكاملة وجودة ثابتة في كل مرحلة.\n\nنؤمن بأن أدق التفاصيل تصنع الفارق الأكبر؛ لذلك نصنع كل بيكسل وكل لقطة وكل كلمة بهدف واضح، فهكذا تكسب العلامات التجارية الاهتمام والثقة.",
                 ],
             ],
             [
@@ -82,10 +82,10 @@ return [
             'en' => 'Six integrated disciplines, 43 specialist services, one creative partner.',
             'ar' => 'ستة تخصصات متكاملة، و43 خدمة متخصصة، وشريك إبداعي واحد.',
         ],
-        'seo_title' => ['en' => 'Our Services | Pixellap', 'ar' => 'خدماتنا | Pixellap'],
+        'seo_title' => ['en' => 'Our Services | Pixellap', 'ar' => 'خدماتنا | بكسل لاب'],
         'seo_description' => [
             'en' => 'Brand identity, media production, digital marketing, web development, AI content and training — explore every Pixellap service.',
-            'ar' => 'الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع ومحتوى الذكاء الاصطناعي والتدريب — استكشف جميع خدمات Pixellap.',
+            'ar' => 'الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع ومحتوى الذكاء الاصطناعي والتدريب — استكشف جميع خدمات بكسل لاب.',
         ],
         'blocks' => [],
     ],
@@ -96,10 +96,10 @@ return [
             'en' => 'Tell us about your project. We reply within 24 hours.',
             'ar' => 'أخبرنا عن مشروعك، وسنرد عليك خلال 24 ساعة.',
         ],
-        'seo_title' => ['en' => 'Contact Us | Pixellap', 'ar' => 'تواصل معنا | Pixellap'],
+        'seo_title' => ['en' => 'Contact Us | Pixellap', 'ar' => 'تواصل معنا | بكسل لاب'],
         'seo_description' => [
             'en' => 'Start a project with Pixellap. Get in touch for branding, production, digital marketing and web enquiries across the UAE.',
-            'ar' => 'ابدأ مشروعك مع Pixellap. تواصل معنا لاستفسارات الهوية البصرية والإنتاج والتسويق الرقمي وتطوير المواقع في الإمارات.',
+            'ar' => 'ابدأ مشروعك مع بكسل لاب. تواصل معنا لاستفسارات الهوية البصرية والإنتاج والتسويق الرقمي وتطوير المواقع في الإمارات.',
         ],
         'blocks' => [],
     ],

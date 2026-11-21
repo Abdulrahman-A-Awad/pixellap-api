@@ -14,7 +14,11 @@ declare(strict_types=1);
 
 return [
     // General
-    ['key' => 'site_name', 'group' => 'general', 'type' => 'text', 'value' => 'Pixellap'],
+    // Localized brand name (browser tab, link previews, JSON-LD, footer, WhatsApp chat).
+    ['key' => 'site_name', 'group' => 'general', 'type' => 'translatable', 'value' => [
+        'en' => 'Pixellap',
+        'ar' => 'بكسل لاب',
+    ]],
     ['key' => 'tagline', 'group' => 'general', 'type' => 'translatable', 'value' => [
         'en' => 'Small Pixels. BIG IMPACT.',
         'ar' => 'بيكسلات صغيرة. أثر كبير.',
@@ -42,22 +46,24 @@ return [
 
     // Social
     ['key' => 'socials', 'group' => 'social', 'type' => 'json', 'value' => [
+        'facebook' => '',
         'instagram' => '',
         'linkedin' => '',
         'tiktok' => '',
         'youtube' => '',
         'x' => '',
         'behance' => '',
+        'snapchat' => '',
     ]],
 
     // SEO
     ['key' => 'seo_default_title', 'group' => 'seo', 'type' => 'translatable', 'value' => [
         'en' => 'Pixellap — Creative, Media & Digital Agency in the UAE',
-        'ar' => 'Pixellap — وكالة إبداعية للإعلام والتسويق الرقمي في الإمارات',
+        'ar' => 'بكسل لاب – وكالة إبداعية للإعلام والتسويق الرقمي في الإمارات',
     ]],
     ['key' => 'seo_default_description', 'group' => 'seo', 'type' => 'translatable', 'value' => [
         'en' => 'Pixellap brings brand identity, media production, digital marketing, web development and AI-powered content together under one roof for businesses across the UAE and GCC.',
-        'ar' => 'تجمع Pixellap بناء الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع والمحتوى المدعوم بالذكاء الاصطناعي تحت سقف واحد، لخدمة الشركات في الإمارات ودول مجلس التعاون الخليجي.',
+        'ar' => 'تجمع بكسل لاب بناء الهوية البصرية والإنتاج الإعلامي والتسويق الرقمي وتطوير المواقع والمحتوى المدعوم بالذكاء الاصطناعي تحت سقف واحد، لخدمة الشركات في الإمارات ودول مجلس التعاون الخليجي.',
     ]],
     // Path on the public disk (uploaded in the admin). Default social sharing image, 1200×630.
     ['key' => 'og_image', 'group' => 'seo', 'type' => 'image', 'value' => null],

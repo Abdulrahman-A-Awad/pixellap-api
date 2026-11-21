@@ -338,12 +338,40 @@ While the site is not launched:
 
 - **Website** asks for a login (HTTP basic auth): user `preview`, password `PREVIEW_PASSWORD` in
   `/root/pixellap-secrets.txt` (`sudo cat /root/pixellap-secrets.txt`). `/api/revalidate` is excluded.
+- **Link-preview bots skip the login** (user-agent allowlist in `web-auth.conf`): `facebookexternalhit`,
+  `Facebot`, `WhatsApp`, `Twitterbot`, `LinkedInBot`, `Slackbot`, `TelegramBot`, `Discordbot` — so links
+  shared in WhatsApp / Facebook / LinkedIn… show the title, description and 1200×630 image. They only read
+  the page head; everything stays `noindex`. (A visitor faking that user agent sees the same public pages
+  that launch with the site — nothing secret is behind the login.)
 - **API + admin** have no basic auth (the admin has its own login; the API needs the site key).
 - Both domains send `X-Robots-Tag: noindex, nofollow`; the website is built with `PRELAUNCH=true`
   (robots.txt `Disallow: /`, `<meta name="robots" content="noindex, nofollow">` on every page).
 
 It all comes from `/etc/nginx/pixellap-prelaunch/` (snippets from `deploy/nginx/prelaunch/` + `htpasswd`), which
 both site configs include with a glob, and `PRELAUNCH=true` in `/var/www/pixellap-web/shared/.env.production.local`.
+
+Install / update the snippets after changing `deploy/nginx/prelaunch/` (as root — `sudo -i`; the deploy user
+cannot write to /etc/nginx):
+
+```bash
+cp /var/www/pixellap-api/deploy/nginx/prelaunch/*.conf /etc/nginx/pixellap-prelaunch/
+nginx -t && systemctl reload nginx
+```
+
+Check the link-preview allowlist (bots → 200 with the Open Graph tags; a browser → 401):
+
+```bash
+for ua in "WhatsApp/2.23.20.0" "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"; do
+  curl -s -A "$ua" -o /tmp/p.html -w "%{http_code}  $ua\n" https://ppixelmedia.com/ar
+  grep -o '<meta property="og:[a-z:_]*" content="[^"]*"' /tmp/p.html
+done
+curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0" -o /dev/null -w "%{http_code}  browser\n" https://ppixelmedia.com/ar   # → 401
+```
+
+Expected tags: `og:title`, `og:description`, `og:url`, `og:site_name` (localized), `og:locale` (`ar_AE` / `en_US`) +
+`og:locale:alternate`, `og:image` (absolute, 1200×630 JPG ≤ 300 KB) + `og:image:width`/`height`/`alt`/`type`,
+`og:type` = website, and `twitter:card` = summary_large_image. Facebook's Sharing Debugger
+(developers.facebook.com/tools/debug) re-scrapes a URL after changes; WhatsApp caches previews per link.
 
 Change the preview password (as root — `sudo -i`):
 
@@ -357,7 +385,8 @@ nginx -t && systemctl reload nginx
 ### Go live
 
 ```bash
-# 1. Remove basic auth + X-Robots-Tag (as root: sudo -i). The site configs keep working: the globs match nothing.
+# 1. Remove basic auth, the link-preview bot allowlist and X-Robots-Tag (as root: sudo -i).
+#    The site configs keep working: the globs match nothing.
 rm -rf /etc/nginx/pixellap-prelaunch
 nginx -t && systemctl reload nginx
 

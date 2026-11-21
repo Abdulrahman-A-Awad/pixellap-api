@@ -52,7 +52,7 @@ class ContentApiTest extends TestCase
     {
         $en = $this->api('site')->assertOk()
             ->assertJsonPath('meta.locale', 'en')
-            ->assertJsonPath('data.settings.site_name', 'Pixellap')
+            ->assertJsonPath('data.settings.site_name', 'Pixellap') // localized: "بكسل لاب" in ar (AdminHomeAndSettingsTest)
             ->assertJsonPath('data.locales', ['en', 'ar'])
             ->assertJsonPath('data.nav.categories.0.slug', $this->firstCategory()->slug);
         $this->assertNotNull($en->json('meta.generated_at'));
@@ -106,8 +106,8 @@ class ContentApiTest extends TestCase
         $ar = $this->api('home', 'ar')->assertOk()->assertJsonPath('meta.locale', 'ar')->json('data');
 
         $hero = HomeSection::query()->where('key', HomeSectionKey::Hero)->firstOrFail();
-        $this->assertSame($hero->getTranslation('title', 'ar'), collect($ar)->firstWhere('key', 'hero')['title']);
-        $this->assertNotSame(collect($en)->firstWhere('key', 'hero')['title'], collect($ar)->firstWhere('key', 'hero')['title']);
+        $this->assertSame($hero->getTranslation('subtitle', 'ar'), collect($ar)->firstWhere('key', 'hero')['subtitle']);
+        $this->assertNotSame(collect($en)->firstWhere('key', 'hero')['subtitle'], collect($ar)->firstWhere('key', 'hero')['subtitle']);
     }
 
     public function test_missing_arabic_falls_back_to_english(): void

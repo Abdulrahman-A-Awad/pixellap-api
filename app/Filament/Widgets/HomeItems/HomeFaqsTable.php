@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Widgets\HomeItems;
 
 use App\Filament\Support\Fields;
+use App\Filament\Support\TableKit;
 use App\Models\Faq;
-use Filament\Resources\RelationManagers\Concerns\Translatable;
-use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 
 /** Home page FAQs (service FAQs live inside each service category). */
 class HomeFaqsTable extends HomeItemsTable
 {
-    use Translatable;
-
     protected function model(): string
     {
         return Faq::class;
@@ -40,24 +37,18 @@ class HomeFaqsTable extends HomeItemsTable
         return 'Questions';
     }
 
-    protected function extraHeaderActions(): array
-    {
-        return [Tables\Actions\LocaleSwitcher::make()];
-    }
-
     protected function columns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('question')->label('Question')->wrap()->weight('bold'),
+            ...TableKit::bilingualColumns('question', 'Question'),
         ];
     }
 
     protected function formSchema(): array
     {
         return [
-            Fields::text('question')->label('Question')->required()->maxLength(500),
-            Fields::rich('answer')->label('Answer')->required()
-                ->helperText(__('Shown when the visitor opens the question.')),
+            Fields::bilingual('question', 'Question', required: true),
+            Fields::bilingual('answer', 'Answer', 'rich', __('Shown when the visitor opens the question.'), required: true),
             Fields::visible(),
         ];
     }

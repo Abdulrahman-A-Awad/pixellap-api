@@ -58,6 +58,21 @@ class ManageSettings extends Page implements HasForms
 
     private const MULTILINE_KEYS = ['address', 'seo_default_description'];
 
+    /** Translatable settings whose English value may not be empty. */
+    private const REQUIRED_KEYS = ['site_name', 'tagline'];
+
+    /** Social networks: display name + local brand icon (resources/svg/brands), in this order. */
+    public const NETWORKS = [
+        'facebook' => 'Facebook',
+        'instagram' => 'Instagram',
+        'linkedin' => 'LinkedIn',
+        'tiktok' => 'TikTok',
+        'youtube' => 'YouTube',
+        'x' => 'X (Twitter)',
+        'behance' => 'Behance',
+        'snapchat' => 'Snapchat',
+    ];
+
     /** Plain-language field labels (English keys, translated via lang/ar.json). */
     public const LABELS = [
         'site_name' => 'Website name',
@@ -78,8 +93,8 @@ class ManageSettings extends Page implements HasForms
     ];
 
     private const HELP = [
-        'site_name' => 'Shown in the browser tab, the footer and search results.',
-        'tagline' => 'A short slogan shown in the footer (and as the home headline if it is empty).',
+        'site_name' => 'Shown in the browser tab, link previews, search results, the footer and the WhatsApp chat — in each language.',
+        'tagline' => 'The big headline on the home page, also shown in the footer. This is the only place to edit the headline.',
         'showreel_url' => 'YouTube, Vimeo or a direct .mp4 link. Empty = the “Watch the reel” button is hidden.',
         'email' => 'Shown on the Contact page and footer. New contact-form messages are sent here.',
         'phone' => 'Shown on the Contact page and footer, e.g. +971 50 000 0000.',
@@ -149,7 +164,13 @@ class ManageSettings extends Page implements HasForms
         $help = isset(self::HELP[$key]) ? __(self::HELP[$key]) : null;
 
         return match ($setting->type) {
-            Setting::TYPE_TRANSLATABLE => Fields::bilingual($key, $label, in_array($key, self::MULTILINE_KEYS, true), $help),
+            Setting::TYPE_TRANSLATABLE => Fields::bilingual(
+                $key,
+                $label,
+                in_array($key, self::MULTILINE_KEYS, true) ? 'textarea' : 'text',
+                $help,
+                required: in_array($key, self::REQUIRED_KEYS, true),
+            ),
 
             Setting::TYPE_BOOLEAN => Toggle::make($key)->label($label)->helperText($help),
 
@@ -165,14 +186,19 @@ class ManageSettings extends Page implements HasForms
                 ->imagePreviewHeight('160')
                 ->downloadable(),
 
-            // Socials: one URL input per network.
+            // Socials: one URL input per network (known networks first, with their brand icon).
             Setting::TYPE_JSON => $key === 'socials'
                 ? Fieldset::make(__($label))->columns(2)->schema(
-                    collect((array) $setting->value)->keys()
+                    collect(array_keys(self::NETWORKS))
+                        ->merge(array_keys((array) $setting->value))
+                        ->unique()
                         ->map(fn (string $network): TextInput => TextInput::make("{$key}.{$network}")
-                            ->label(Str::headline($network === 'x' ? 'X (Twitter)' : $network))
+                            ->label(self::NETWORKS[$network] ?? Str::headline($network))
                             ->url()
-                            ->prefixIcon('heroicon-o-link'))
+                            ->maxLength(500)
+                            ->placeholder('https://')
+                            ->prefixIcon(isset(self::NETWORKS[$network]) ? "brand-{$network}" : 'heroicon-o-link'))
+                        ->values()
                         ->all(),
                 )
                 : KeyValue::make($key)->label($label)->helperText($help),

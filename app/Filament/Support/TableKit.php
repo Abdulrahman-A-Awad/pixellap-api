@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Support;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -22,6 +23,37 @@ final class TableKit
         return ToggleColumn::make('is_visible')
             ->label('Visible')
             ->disabled(fn (Model $record): bool => ! (auth()->user()?->can('update', $record) ?? false));
+    }
+
+    /**
+     * Both languages of a translatable attribute: `{name}` shows English, `{name}_ar` shows Arabic
+     * (RTL) — or a warning "AR missing" badge when it is empty. No language switcher needed.
+     *
+     * @return array{0: TextColumn, 1: TextColumn}
+     */
+    public static function bilingualColumns(string $name, string $label, int $limit = 70): array
+    {
+        $translation = fn (Model $record, string $locale): string => method_exists($record, 'getTranslation')
+            ? trim(strip_tags((string) $record->getTranslation($name, $locale, false)))
+            : '';
+
+        return [
+            TextColumn::make($name)
+                ->label(__($label).' (EN)')
+                ->state(fn (Model $record): string => $translation($record, 'en'))
+                ->limit($limit)
+                ->wrap()
+                ->weight('bold'),
+            TextColumn::make("{$name}_ar")
+                ->label(__($label).' (AR)')
+                ->state(fn (Model $record): string => $translation($record, 'ar') ?: __('AR missing'))
+                ->badge(fn (Model $record): bool => $translation($record, 'ar') === '')
+                ->color(fn (Model $record): ?string => $translation($record, 'ar') === '' ? 'warning' : null)
+                ->icon(fn (Model $record): ?string => $translation($record, 'ar') === '' ? 'heroicon-m-exclamation-triangle' : null)
+                ->extraAttributes(fn (Model $record): array => $translation($record, 'ar') === '' ? [] : ['dir' => 'rtl', 'lang' => 'ar'])
+                ->limit($limit)
+                ->wrap(),
+        ];
     }
 
     public static function visibleFilter(): TernaryFilter

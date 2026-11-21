@@ -148,7 +148,8 @@ class AdminSimplifiedPanelTest extends TestCase
     {
         $this->actingAs($this->superAdmin())->get('/admin/home-sections')->assertOk()
             ->assertSee(['Hero', 'Numbers', 'Our services', 'How we work', 'Clients', 'About teaser', 'FAQ', 'Contact banner'])
-            ->assertSee('Key numbers with a count-up animation.')
+            ->assertSee('Shown as a strip under “About”. Turn off to hide the numbers.', false)
+            ->assertSee('Hidden: no items') // no client logos are seeded
             ->assertSee(Stat::count().' items');
 
         $this->assertSame(Faq::whereNull('service_category_id')->count(), HomeSectionResource::itemCount(HomeSectionKey::Faq));
@@ -186,38 +187,44 @@ class AdminSimplifiedPanelTest extends TestCase
         $table = Livewire::test(StatsTable::class, ['record' => $section]);
 
         $table->assertCanSeeTableRecords(Stat::all())
-            ->callTableAction('create', data: ['value' => 12, 'suffix' => '+', 'label' => 'Awards won', 'is_visible' => true])
+            ->callTableAction('create', data: ['value' => 12, 'suffix' => '+', 'label' => ['en' => 'Awards won', 'ar' => 'جوائز'], 'is_visible' => true])
             ->assertHasNoTableActionErrors();
 
         $stat = Stat::query()->latest('id')->firstOrFail();
         $this->assertSame('Awards won', $stat->getTranslation('label', 'en'));
         $this->assertSame(12, $stat->value);
 
-        $table->callTableAction('edit', $stat, data: ['value' => 15, 'label' => 'Awards'])
+        $table->callTableAction('edit', $stat, data: ['value' => 15, 'label' => ['en' => 'Awards', 'ar' => 'جوائز']])
             ->assertHasNoTableActionErrors();
         $this->assertSame(15, $stat->refresh()->value);
 
         // Validation is the same as before: the number is required.
-        $table->callTableAction('create', data: ['label' => 'No number'])
+        $table->callTableAction('create', data: ['label' => ['en' => 'No number']])
             ->assertHasTableActionErrors(['value']);
 
         Livewire::test(StatsTable::class, ['record' => $section])->callTableAction('delete', $stat);
         $this->assertModelMissing($stat);
     }
 
-    public function test_arabic_text_is_edited_with_the_language_switcher(): void
+    public function test_both_languages_are_edited_side_by_side(): void
     {
         $this->actingAs($this->superAdmin());
         $step = ProcessStep::query()->ordered()->firstOrFail();
 
         Livewire::test(ProcessStepsTable::class, ['record' => $this->section(HomeSectionKey::Process)])
-            ->set('activeLocale', 'ar')
-            ->callTableAction('edit', $step, data: ['title' => 'خطوة معدلة', 'description' => 'وصف'])
+            ->mountTableAction('edit', $step)
+            // The modal is filled with BOTH languages (no switcher).
+            ->assertTableActionDataSet([
+                'title.en' => $step->getTranslation('title', 'en'),
+                'title.ar' => $step->getTranslation('title', 'ar'),
+            ])
+            ->setTableActionData(['title' => ['en' => 'Edited step', 'ar' => 'خطوة معدلة'], 'description' => ['en' => 'Text', 'ar' => 'وصف']])
+            ->callMountedTableAction()
             ->assertHasNoTableActionErrors();
 
         $step->refresh();
         $this->assertSame('خطوة معدلة', $step->getTranslation('title', 'ar'));
-        $this->assertNotSame('خطوة معدلة', $step->getTranslation('title', 'en'));
+        $this->assertSame('Edited step', $step->getTranslation('title', 'en'));
     }
 
     public function test_home_faq_table_lists_home_faqs_only(): void

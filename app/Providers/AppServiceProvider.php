@@ -22,6 +22,7 @@ use App\Policies\ActivityPolicy;
 use App\Services\RevalidationService;
 use App\Support\ApiCache;
 use App\Support\ClientIp;
+use BladeUI\Icons\Factory as IconFactory;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -52,6 +53,12 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ApiCache::class);
         $this->app->singleton(RevalidationService::class);
+
+        // Local brand icons for the admin (social link inputs): resources/svg/brands → "brand-facebook" …
+        // Same Simple Icons paths (CC0) as the website's BrandIcons.
+        $this->callAfterResolving(IconFactory::class, function (IconFactory $icons): void {
+            $icons->add('brand', ['path' => resource_path('svg/brands'), 'prefix' => 'brand']);
+        });
     }
 
     /**

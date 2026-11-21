@@ -69,8 +69,16 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   `HomeSectionKey::fields()` — the form and the API hide what the website does not render.
 - Build translatable inputs with `App\Filament\Support\Fields` (`text`/`textarea`/`rich` add `dir="auto"`;
   `image`/`vectorOrImage`/`video` apply upload limits). Shared table bits: `App\Filament\Support\TableKit`.
-- Translatable resources: `use Translatable` on the resource + page concerns + `LocaleSwitcher` header action;
-  relation managers use the RM `Translatable` concern + `Tables\Actions\LocaleSwitcher`.
+- **Home Page (sections + embedded item tables) and Site settings: NO language switcher.** Every translatable field is
+  `Fields::bilingual($name, $label, 'text'|'textarea'|'rich', $help, required:)` (EN | AR side by side, `{name}.en/.ar`;
+  EN required when the field is; empty AR = warning hint only), tables use `TableKit::bilingualColumns()` ("AR missing"
+  badge). Each section form starts with `HomeSectionKey::where()`; sections that need items show
+  `emptyNotice()` + a "Hidden: no items" list badge (`HomeSectionResource::isHiddenForNoItems`). The hero has no title
+  (H1 = tagline setting). Hero video uploads are `previewable(false)->openable()` (no download on page load).
+- Other translatable resources (Services, Pages): `use Translatable` on the resource + page concerns + `LocaleSwitcher`
+  header action; relation managers use the RM `Translatable` concern + `Tables\Actions\LocaleSwitcher`.
+- `site_name` is a translatable setting ("Pixellap" / "بكسل لاب"). Brand icons for the admin: `resources/svg/brands`
+  (blade-icons set `brand-*`, registered in `AppServiceProvider::register`).
 - Admin UI language: `users.admin_locale` applied by `SetAdminLocale` (must run BEFORE `DispatchServingFilamentEvent`,
   which builds the navigation). Admin labels are English and translated via `lang/ar.json` — add every new label there.
 - Permissions: Shield. **Re-generate with `php artisan shield:generate --all --panel=admin --ignore-existing-policies`**

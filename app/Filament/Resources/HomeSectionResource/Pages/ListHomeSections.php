@@ -6,12 +6,10 @@ namespace App\Filament\Resources\HomeSectionResource\Pages;
 
 use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Filament\Resources\HomeSectionResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListHomeSections extends ListRecords
 {
-    use ListRecords\Concerns\Translatable;
     use RevalidatesOnReorder;
 
     protected static string $resource = HomeSectionResource::class;
@@ -19,12 +17,5 @@ class ListHomeSections extends ListRecords
     public function getTitle(): string
     {
         return __('Home Page');
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\LocaleSwitcher::make(),
-        ];
     }
 }

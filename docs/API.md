@@ -110,6 +110,11 @@ once per request in the root layout.
 until an editor uploads one (Admin → Site settings → SEO). Use it as the Open Graph image when a
 page has no image of its own.
 
+`settings.site_name` is **localized** ("Pixellap" in `en`, "بكسل لاب" in `ar`): use it for the
+`<title>` suffix, `og:site_name`, JSON-LD `name` (the other locale's value as `alternateName`), the
+footer © line and the WhatsApp chat header. `settings.tagline` is also the home hero headline.
+`settings.socials` keys: `facebook, instagram, linkedin, tiktok, youtube, x, behance, snapchat`.
+
 ```ts
 const site = await api<SiteResponse>('/site', { locale, tags: ['site'] });
 site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
@@ -134,12 +139,14 @@ site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
       "vat_number": "TODO: 100000000000000",
       "response_time": "We reply within 24 hours.",
       "socials": {
+        "facebook": "",
         "instagram": "",
         "linkedin": "",
         "tiktok": "",
         "youtube": "",
         "x": "",
-        "behance": ""
+        "behance": "",
+        "snapchat": ""
       },
       "seo_default_title": "Pixellap — Creative, Media & Digital Agency in the UAE",
       "seo_default_description": "Pixellap brings brand identity, media production, digital marketing, web development and AI-powered content together under one roof for businesses across the UAE and GCC.",
@@ -236,7 +243,7 @@ Fields a section type does not use are always `null`. Extra data per key:
 
 | key | Extra field(s) |
 |---|---|
-| `hero` | `media: HeroMedia` (loop video variants; uses `title`, `subtitle`, `cta`, `cta2`; `eyebrow` is always `null`; see the hero media notes below) |
+| `hero` | `media: HeroMedia` (loop video variants; uses `subtitle`, `cta`, `cta2`; `eyebrow` and `title` are always `null` — the headline is `settings.tagline`. `cta2` is a normal link (default "Explore our services" → /services); the reel button is automatic when `settings.showreel_url` is set. See the hero media notes below) |
 | `stats` | `items: HomeStat[]` (`value` is a number; animate it, then wrap with `prefix`/`suffix`) |
 | `services` | `categories: HomeCategoryCard[]` (each with `services: string[]` titles for tags) |
 | `process` | `steps: ProcessStep[]` (`title`, `description`) |
@@ -275,15 +282,15 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
     {
       "key": "hero",
       "eyebrow": null,
-      "title": "Small Pixels. BIG IMPACT.",
+      "title": null,
       "subtitle": "Integrated branding, media production, digital marketing and web — all under one roof.",
       "cta": {
         "label": "Start a project",
         "url": "/contact"
       },
       "cta2": {
-        "label": "Watch the reel",
-        "url": "#reel"
+        "label": "Explore our services",
+        "url": "/services"
       },
       "image": null,
       "media": {
@@ -558,15 +565,15 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
     {
       "key": "hero",
       "eyebrow": null,
-      "title": "بيكسلات صغيرة. أثر كبير.",
+      "title": null,
       "subtitle": "هوية بصرية وإنتاج إعلامي وتسويق رقمي وتطوير مواقع، متكاملة تحت سقف واحد.",
       "cta": {
         "label": "ابدأ مشروعك",
         "url": "/contact"
       },
       "cta2": {
-        "label": "شاهد العرض التعريفي",
-        "url": "#reel"
+        "label": "استكشف خدماتنا",
+        "url": "/services"
       },
       "image": null,
       "media": {

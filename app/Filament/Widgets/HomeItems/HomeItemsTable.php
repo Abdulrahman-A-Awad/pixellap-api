@@ -20,7 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Permissions come from each model's policy (content editors cannot delete). Reordering
  * revalidates the website and is logged on the home section (RevalidatesOnReorder).
- * Translatable subclasses add `Concerns\Translatable` + a LocaleSwitcher, like relation managers.
+ * Translatable fields are EN | AR pairs (Fields::bilingual) and the tables show both languages
+ * (TableKit::bilingualColumns): no language switcher.
  */
 abstract class HomeItemsTable extends TableWidget
 {

@@ -12,13 +12,11 @@ use App\Models\Faq;
 use App\Models\HomeSection;
 use App\Models\ProcessStep;
 use App\Models\Stat;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
+/** Edit one home section. Translatable fields are EN | AR pairs: no language switcher. */
 class EditHomeSection extends EditRecord
 {
-    use EditRecord\Concerns\Translatable;
-
     protected static string $resource = HomeSectionResource::class;
 
     /** Section key → [items table, model whose viewAny permission it needs]. */
@@ -34,13 +32,6 @@ class EditHomeSection extends EditRecord
         $key = $this->getRecord() instanceof HomeSection ? $this->getRecord()->key : null;
 
         return $key instanceof HomeSectionKey ? __($key->description()) : null;
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\LocaleSwitcher::make(),
-        ];
     }
 
     /** The section's own items (numbers, steps, logos, questions) under the form. */
