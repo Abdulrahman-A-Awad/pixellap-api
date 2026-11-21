@@ -114,6 +114,22 @@ return [
         'help_cta' => ['Ask us directly', 'اسألنا مباشرة'],
     ],
 
+    // Floating WhatsApp chat widget. {page} = title of the page the visitor is on.
+    'whatsapp' => [
+        'open' => ['Chat with us on WhatsApp', 'تحدّث معنا عبر واتساب'],
+        'tooltip' => ['Need help? Chat with us', 'تحتاج إلى مساعدة؟ تحدّث معنا'],
+        'replies' => ['Typically replies within an hour', 'نردّ عادةً خلال ساعة'],
+        'greeting' => [
+            'Hi there! How can we help with your project today?',
+            'مرحباً! كيف يمكننا مساعدتك في مشروعك اليوم؟',
+        ],
+        'start' => ['Start chat', 'ابدأ المحادثة'],
+        'prefill' => [
+            'Hello, I would like to ask about a project. (Page: {page})',
+            'مرحباً، أودّ الاستفسار عن مشروع. (الصفحة: {page})',
+        ],
+    ],
+
     'misc' => [
         // Label of the switcher shows the OTHER language.
         'lang_switch_label' => ['العربية', 'English'],
