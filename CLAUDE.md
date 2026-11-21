@@ -49,6 +49,9 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - Site settings: `Setting::get('key')` (cached forever under `settings`, cleared on save).
 - Seed copy lives in `database/seeders/data/*.php` — edit text there, not in seeder classes.
   Seeders are idempotent (`php artisan db:seed` is safe to re-run). Settings seed with `firstOrCreate` so real values are never overwritten.
+- New UI strings on existing installs: add them to `data/ui_strings.php` AND a small data migration that `firstOrCreate`s
+  just those keys (e.g. `2026_11_21_100000_add_missing_ui_strings_refine_home`) — deploys run migrations; `UiStringSeeder`
+  uses `updateOrCreate` and would overwrite texts editors changed in the admin.
 - Tests: `php artisan test` (in-memory SQLite, does not touch MySQL).
 
 ## Admin panel (Filament)

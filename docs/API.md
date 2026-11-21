@@ -236,7 +236,7 @@ Fields a section type does not use are always `null`. Extra data per key:
 
 | key | Extra field(s) |
 |---|---|
-| `hero` | `media: HeroMedia` (loop video variants; uses `cta`, `cta2`; see the hero media notes below) |
+| `hero` | `media: HeroMedia` (loop video variants; uses `title`, `subtitle`, `cta`, `cta2`; `eyebrow` is always `null`; see the hero media notes below) |
 | `stats` | `items: HomeStat[]` (`value` is a number; animate it, then wrap with `prefix`/`suffix`) |
 | `services` | `categories: HomeCategoryCard[]` (each with `services: string[]` titles for tags) |
 | `process` | `steps: ProcessStep[]` (`title`, `description`) |
@@ -274,7 +274,7 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
   "data": [
     {
       "key": "hero",
-      "eyebrow": "Creative | Media | Digital — UAE",
+      "eyebrow": null,
       "title": "Small Pixels. BIG IMPACT.",
       "subtitle": "Integrated branding, media production, digital marketing and web — all under one roof.",
       "cta": {
@@ -557,7 +557,7 @@ instead of the scene on phones and low-power devices. Two orientations, each wit
   "data": [
     {
       "key": "hero",
-      "eyebrow": "إبداع | إعلام | رقمي — الإمارات",
+      "eyebrow": null,
       "title": "بيكسلات صغيرة. أثر كبير.",
       "subtitle": "هوية بصرية وإنتاج إعلامي وتسويق رقمي وتطوير مواقع، متكاملة تحت سقف واحد.",
       "cta": {

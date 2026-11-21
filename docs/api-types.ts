@@ -139,7 +139,7 @@ export type HomeSectionKey =
 /** Fields every section carries. Unused fields for a section are always null. */
 interface HomeSectionBase<K extends HomeSectionKey> {
   key: K;
-  /** every section except contact_cta */
+  /** every section except hero and contact_cta */
   eyebrow: string | null;
   title: string | null;
   subtitle: PlainText | null;

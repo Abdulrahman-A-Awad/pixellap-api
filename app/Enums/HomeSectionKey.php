@@ -59,7 +59,8 @@ enum HomeSectionKey: string implements HasLabel
 
         return match ($this) {
             // Hero media = the loop video variants (HomeSection::HERO_MEDIA), not the plain image.
-            self::Hero => [...$base, 'cta', 'cta2', 'media'],
+            // No eyebrow: the hero stays calm (the column is kept, the field is hidden).
+            self::Hero => ['title', 'subtitle', 'cta', 'cta2', 'media'],
             self::Services => [...$base, 'cta'],
             self::About => [...$base, 'cta', 'image'],
             // The banner shows a title, a short text and one button (no eyebrow, no image).

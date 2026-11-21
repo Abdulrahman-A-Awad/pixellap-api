@@ -26,6 +26,7 @@ return [
         'send_message' => ['Send message', 'إرسال الرسالة'],
         'back_home' => ['Back to home', 'العودة إلى الرئيسية'],
         'view_all' => ['View all', 'عرض الكل'],
+        'view_all_services' => ['View all services', 'عرض جميع الخدمات'],
     ],
 
     'footer' => [
@@ -101,6 +102,16 @@ return [
         'request' => ['Request this service', 'اطلب هذه الخدمة'],
         'faq_title' => ['Frequently asked questions', 'الأسئلة الشائعة'],
         'explore_other' => ['Explore other services', 'استكشف خدماتنا الأخرى'],
+    ],
+
+    // FAQ help card (home + category pages).
+    'faq' => [
+        'help_title' => ["Didn't find your answer?", 'لم تجد إجابتك؟'],
+        'help_text' => [
+            'Our team is happy to help. Send us your question and we will get back to you shortly.',
+            'يسعد فريقنا مساعدتك. أرسل لنا سؤالك وسنعود إليك في أقرب وقت.',
+        ],
+        'help_cta' => ['Ask us directly', 'اسألنا مباشرة'],
     ],
 
     'misc' => [
