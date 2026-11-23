@@ -30,23 +30,55 @@ final class PublicContent
     /** Settings exposed by GET /site (everything else stays private). */
     public const PUBLIC_SETTINGS = [
         'site_name', 'tagline', 'showreel_url',
-        'email', 'phone', 'whatsapp', 'address', 'map_embed_url', 'working_hours', 'vat_number', 'response_time',
-        'socials',
+        'email', 'phone', 'whatsapp', 'address', 'map_embed_url', 'working_hours', 'business_hours', 'vat_number',
+        'response_time', 'socials',
         'seo_default_title', 'seo_default_description', 'og_image',
     ];
 
     /** Image settings: stored as a public-disk path, returned as an absolute URL. */
     public const IMAGE_SETTINGS = ['og_image'];
 
+    /** Week days accepted in `business_hours.days`, Monday first. */
+    public const WEEK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
     /** @return array<string, mixed> */
     public function settings(): array
     {
         $out = [];
         foreach (self::PUBLIC_SETTINGS as $key) {
-            $out[$key] = in_array($key, self::IMAGE_SETTINGS, true) ? Setting::imageUrl($key) : Setting::get($key);
+            $out[$key] = match (true) {
+                in_array($key, self::IMAGE_SETTINGS, true) => Setting::imageUrl($key),
+                $key === 'business_hours' => $this->businessHours(Setting::get($key)),
+                default => Setting::get($key),
+            };
         }
 
         return $out;
+    }
+
+    /**
+     * Structured opening hours, normalised: {days: ["mon", …] (week order), open: "HH:MM", close: "HH:MM",
+     * timezone}. Null when missing or unusable (bad time, or close not after open).
+     *
+     * @return array{days: list<string>, open: string, close: string, timezone: string}|null
+     */
+    private function businessHours(mixed $value): ?array
+    {
+        if (! is_array($value)) {
+            return null;
+        }
+        $time = fn (mixed $t): ?string => is_string($t) && preg_match('/^([01]\d|2[0-3]):[0-5]\d/', $t) === 1 ? substr($t, 0, 5) : null;
+        $open = $time($value['open'] ?? null);
+        $close = $time($value['close'] ?? null);
+        if ($open === null || $close === null || $close <= $open) {
+            return null;
+        }
+        $days = array_values(array_intersect(self::WEEK_DAYS, (array) ($value['days'] ?? [])));
+        $timezone = is_string($value['timezone'] ?? null) && in_array($value['timezone'], timezone_identifiers_list(), true)
+            ? $value['timezone']
+            : 'Asia/Dubai';
+
+        return ['days' => $days, 'open' => $open, 'close' => $close, 'timezone' => $timezone];
     }
 
     /** @return array<string, string> flat {"nav.home": "Home", ...} in the current locale */

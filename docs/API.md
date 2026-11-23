@@ -136,6 +136,7 @@ site.data.ui_strings['nav.services']; // "Services" | "خدماتنا"
       "address": "TODO: Office address, Dubai, United Arab Emirates",
       "map_embed_url": "",
       "working_hours": "Monday – Friday, 9:00 am – 6:00 pm",
+      "business_hours": { "days": ["mon", "tue", "wed", "thu", "fri"], "open": "09:00", "close": "18:00", "timezone": "Asia/Dubai" },
       "vat_number": "TODO: 100000000000000",
       "response_time": "We reply within 24 hours.",
       "socials": {

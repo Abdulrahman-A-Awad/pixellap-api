@@ -118,15 +118,15 @@ return [
             [
                 'question' => ['en' => 'How long does a brand identity project take?', 'ar' => 'كم يستغرق مشروع بناء الهوية البصرية؟'],
                 'answer' => [
-                    'en' => 'A full identity typically takes six to eight weeks, including strategy, concepts, refinements and final guidelines. A logo-only project usually takes two to three weeks.',
-                    'ar' => 'يستغرق مشروع الهوية المتكاملة عادةً من ستة إلى ثمانية أسابيع، تشمل الاستراتيجية والمفاهيم الأولية والتعديلات ودليل الهوية النهائي، بينما يستغرق تصميم الشعار وحده من أسبوعين إلى ثلاثة أسابيع.',
+                    'en' => '<p>It depends on what you need:</p><ul><li><strong>Full identity:</strong> six to eight weeks, covering strategy, concepts, refinements and final guidelines</li><li><strong>Logo only:</strong> two to three weeks</li></ul>',
+                    'ar' => '<p>يعتمد ذلك على ما تحتاجه:</p><ul><li><strong>الهوية المتكاملة:</strong> من ستة إلى ثمانية أسابيع، تشمل الاستراتيجية والمفاهيم الأولية والتعديلات ودليل الهوية النهائي</li><li><strong>الشعار وحده:</strong> من أسبوعين إلى ثلاثة أسابيع</li></ul>',
                 ],
             ],
             [
                 'question' => ['en' => 'Can you refresh our existing brand rather than start from scratch?', 'ar' => 'هل يمكنكم تطوير هويتنا الحالية بدلاً من البدء من الصفر؟'],
                 'answer' => [
-                    'en' => 'Yes. We often evolve existing brands — modernising the logo, tightening the visual system and updating guidelines — while protecting the recognition you have already built.',
-                    'ar' => 'نعم، كثيراً ما نعمل على تطوير الهويات القائمة من خلال تحديث الشعار وتنظيم المنظومة البصرية وتحديث دليل الهوية، مع الحفاظ على ما بنته علامتك من حضور وتميّز.',
+                    'en' => '<p>Yes. We often evolve existing brands while protecting the recognition you have already built:</p><ul><li>Modernising the logo</li><li>Tightening the visual system</li><li>Updating the brand guidelines</li></ul>',
+                    'ar' => '<p>نعم، كثيراً ما نطوّر الهويات القائمة مع الحفاظ على ما بنته علامتك من حضور وتميّز، وذلك من خلال:</p><ul><li>تحديث الشعار</li><li>تنظيم المنظومة البصرية</li><li>تحديث دليل الهوية</li></ul>',
                 ],
             ],
         ],
@@ -257,15 +257,15 @@ return [
             [
                 'question' => ['en' => 'Do you provide the full crew and equipment?', 'ar' => 'هل توفرون طاقم العمل والمعدات كاملة؟'],
                 'answer' => [
-                    'en' => 'Yes. We supply directors, camera operators, lighting, sound and editors, along with professional cinema equipment, so you deal with one team from start to finish.',
-                    'ar' => 'نعم، نوفر المخرجين والمصورين وفنيي الإضاءة والصوت والمونتاج، إضافة إلى معدات تصوير سينمائية احترافية، لتتعامل مع فريق واحد من البداية حتى النهاية.',
+                    'en' => '<p>Yes. You deal with one team from start to finish:</p><ul><li>Directors, camera operators and editors</li><li>Lighting and sound crew</li><li>Professional cinema equipment</li></ul>',
+                    'ar' => '<p>نعم، تتعامل مع فريق واحد من البداية حتى النهاية:</p><ul><li>مخرجون ومصورون وفنيو مونتاج</li><li>فنيو إضاءة وصوت</li><li>معدات تصوير سينمائية احترافية</li></ul>',
                 ],
             ],
             [
                 'question' => ['en' => 'Do you film across the UAE and the GCC?', 'ar' => 'هل تصوّرون في جميع أنحاء الإمارات ودول الخليج؟'],
                 'answer' => [
-                    'en' => 'Yes. We film across all seven emirates and travel throughout the GCC for productions and events.',
-                    'ar' => 'نعم، نصوّر في جميع الإمارات السبع، ونتنقل إلى مختلف دول مجلس التعاون الخليجي لتنفيذ مشاريع الإنتاج وتغطية الفعاليات.',
+                    'en' => '<p>Yes. We film across all seven emirates and travel throughout the GCC for productions and events.</p>',
+                    'ar' => '<p>نعم، نصوّر في جميع الإمارات السبع، ونتنقل إلى مختلف دول مجلس التعاون الخليجي لتنفيذ مشاريع الإنتاج وتغطية الفعاليات.</p>',
                 ],
             ],
         ],
@@ -385,15 +385,15 @@ return [
             [
                 'question' => ['en' => 'What budget do I need for paid advertising?', 'ar' => 'ما الميزانية المطلوبة للإعلانات المدفوعة؟'],
                 'answer' => [
-                    'en' => 'Budgets vary by goal and market. We recommend a short test phase to find the best-performing channels, then scale what works. Our management fee is quoted separately from your ad spend.',
-                    'ar' => 'تختلف الميزانية بحسب الهدف والسوق المستهدف. ونوصي بمرحلة تجريبية قصيرة لتحديد القنوات الأعلى أداءً، ثم التوسع فيما يحقق النتائج. وتُحتسب رسوم الإدارة بشكل منفصل عن ميزانية الإعلانات.',
+                    'en' => '<p>Budgets vary by goal and market, so we start small and scale what works:</p><ul><li>A short test phase finds the best-performing channels</li><li>We then scale the channels that deliver</li><li>Our management fee is quoted separately from your ad spend</li></ul>',
+                    'ar' => '<p>تختلف الميزانية بحسب الهدف والسوق، لذلك نبدأ بخطوات مدروسة ثم نتوسع فيما ينجح:</p><ul><li>مرحلة تجريبية قصيرة لتحديد القنوات الأعلى أداءً</li><li>التوسع في القنوات التي تحقق النتائج</li><li>تُحتسب رسوم الإدارة بشكل منفصل عن ميزانية الإعلانات</li></ul>',
                 ],
             ],
             [
                 'question' => ['en' => 'How soon will we see results?', 'ar' => 'متى نبدأ في رؤية النتائج؟'],
                 'answer' => [
-                    'en' => 'Paid campaigns can deliver results within days. Organic growth and brand awareness build over three to six months of consistent activity. We report monthly, so you can see progress clearly.',
-                    'ar' => 'قد تحقق الحملات المدفوعة نتائج خلال أيام، بينما يحتاج النمو العضوي وبناء الوعي بالعلامة إلى فترة تتراوح بين ثلاثة وستة أشهر من العمل المستمر. ونقدم تقارير شهرية لتتابع التقدم بوضوح.',
+                    'en' => '<p>It depends on the channel:</p><ul><li><strong>Paid campaigns:</strong> results within days</li><li><strong>Organic growth and brand awareness:</strong> three to six months of consistent activity</li><li><strong>Monthly reports</strong> so you can see progress clearly</li></ul>',
+                    'ar' => '<p>يعتمد ذلك على القناة:</p><ul><li><strong>الحملات المدفوعة:</strong> نتائج خلال أيام</li><li><strong>النمو العضوي والوعي بالعلامة:</strong> من ثلاثة إلى ستة أشهر من العمل المستمر</li><li><strong>تقارير شهرية</strong> لتتابع التقدم بوضوح</li></ul>',
                 ],
             ],
         ],
@@ -502,15 +502,15 @@ return [
             [
                 'question' => ['en' => 'Will our website work in both Arabic and English?', 'ar' => 'هل سيعمل موقعنا باللغتين العربية والإنجليزية؟'],
                 'answer' => [
-                    'en' => 'Yes. Every website we build is fully bilingual, with proper right-to-left layouts for Arabic — not simply a mirrored or machine-translated version.',
-                    'ar' => 'نعم، كل موقع نطوّره ثنائي اللغة بالكامل، مع تصميم عربي سليم من اليمين إلى اليسار، وليس مجرد نسخة معكوسة أو مترجمة آلياً.',
+                    'en' => '<p>Yes. Every website we build is fully bilingual, with proper right-to-left layouts for Arabic — not simply a mirrored or machine-translated version.</p>',
+                    'ar' => '<p>نعم، كل موقع نطوّره ثنائي اللغة بالكامل، مع تصميم عربي سليم من اليمين إلى اليسار، وليس مجرد نسخة معكوسة أو مترجمة آلياً.</p>',
                 ],
             ],
             [
                 'question' => ['en' => 'Can we update the website ourselves?', 'ar' => 'هل يمكننا تحديث الموقع بأنفسنا؟'],
                 'answer' => [
-                    'en' => 'Yes. We include an easy-to-use content management system and train your team, so you can update text, images and pages without technical help.',
-                    'ar' => 'نعم، نوفر نظام إدارة محتوى سهل الاستخدام وندرّب فريقك عليه، لتتمكن من تحديث النصوص والصور والصفحات دون الحاجة إلى دعم تقني.',
+                    'en' => '<p>Yes. You stay in control of your content:</p><ul><li>An easy-to-use content management system</li><li>Training for your team</li><li>Update text, images and pages without technical help</li></ul>',
+                    'ar' => '<p>نعم، يبقى محتوى موقعك بين يديك:</p><ul><li>نظام إدارة محتوى سهل الاستخدام</li><li>تدريب فريقك على استخدامه</li><li>تحديث النصوص والصور والصفحات دون الحاجة إلى دعم تقني</li></ul>',
                 ],
             ],
         ],
@@ -608,15 +608,15 @@ return [
             [
                 'question' => ['en' => 'Is AI-generated content safe to use commercially?', 'ar' => 'هل يمكن استخدام المحتوى المولّد بالذكاء الاصطناعي تجارياً بأمان؟'],
                 'answer' => [
-                    'en' => 'We use licensed, commercially cleared tools and review every output for brand fit, accuracy and rights. We will always tell you when traditional production is the better choice.',
-                    'ar' => 'نستخدم أدوات مرخّصة ومعتمدة للاستخدام التجاري، ونراجع كل مخرج للتأكد من توافقه مع هوية العلامة ودقته وسلامة حقوقه. كما نوضح لك دائماً متى يكون الإنتاج التقليدي هو الخيار الأفضل.',
+                    'en' => '<p>Yes, when it is done properly. We:</p><ul><li>Use licensed, commercially cleared tools</li><li>Review every output for brand fit, accuracy and rights</li><li>Tell you when traditional production is the better choice</li></ul>',
+                    'ar' => '<p>نعم، عند استخدامه بالطريقة الصحيحة؛ إذ إننا:</p><ul><li>نستخدم أدوات مرخّصة ومعتمدة للاستخدام التجاري</li><li>نراجع كل مخرج للتأكد من توافقه مع هوية العلامة ودقته وسلامة حقوقه</li><li>نوضح لك متى يكون الإنتاج التقليدي هو الخيار الأفضل</li></ul>',
                 ],
             ],
             [
                 'question' => ['en' => 'Does AI replace your creative team?', 'ar' => 'هل يحل الذكاء الاصطناعي محل فريقكم الإبداعي؟'],
                 'answer' => [
-                    'en' => 'No. AI is a tool our team uses to move faster. Strategy, ideas, art direction and quality control stay in the hands of experienced people.',
-                    'ar' => 'لا، فالذكاء الاصطناعي أداة يستخدمها فريقنا للعمل بسرعة أكبر، بينما تبقى الاستراتيجية والأفكار والتوجيه الفني ومراقبة الجودة بأيدي خبراء متمرسين.',
+                    'en' => '<p>No. AI is a tool our team uses to move faster. These stay in the hands of experienced people:</p><ul><li>Strategy and ideas</li><li>Art direction</li><li>Quality control</li></ul>',
+                    'ar' => '<p>لا، فالذكاء الاصطناعي أداة يستخدمها فريقنا للعمل بسرعة أكبر، بينما تبقى المهام التالية بأيدي خبراء متمرسين:</p><ul><li>الاستراتيجية والأفكار</li><li>التوجيه الفني</li><li>مراقبة الجودة</li></ul>',
                 ],
             ],
         ],
@@ -715,15 +715,15 @@ return [
             [
                 'question' => ['en' => 'Can you run training at our offices?', 'ar' => 'هل تقدّمون التدريب في مقر مؤسستنا؟'],
                 'answer' => [
-                    'en' => 'Yes. We deliver training at your offices anywhere in the UAE, or online, depending on what suits your team.',
-                    'ar' => 'نعم، نقدّم التدريب في مقر مؤسستك في أي مكان داخل الإمارات، أو عن بُعد، بحسب ما يناسب فريقك.',
+                    'en' => '<p>Yes. We deliver training at your offices anywhere in the UAE, or online, depending on what suits your team.</p>',
+                    'ar' => '<p>نعم، نقدّم التدريب في مقر مؤسستك في أي مكان داخل الإمارات، أو عن بُعد، بحسب ما يناسب فريقك.</p>',
                 ],
             ],
             [
                 'question' => ['en' => 'Are the courses available in Arabic?', 'ar' => 'هل تتوفر الدورات باللغة العربية؟'],
                 'answer' => [
-                    'en' => 'Yes. All courses can be delivered in Arabic or English, with materials provided in the language of your choice.',
-                    'ar' => 'نعم، يمكن تقديم جميع الدورات باللغة العربية أو الإنجليزية، مع توفير المواد التدريبية باللغة التي تختارها.',
+                    'en' => '<p>Yes. All courses can be delivered in Arabic or English, with materials provided in the language of your choice.</p>',
+                    'ar' => '<p>نعم، يمكن تقديم جميع الدورات باللغة العربية أو الإنجليزية، مع توفير المواد التدريبية باللغة التي تختارها.</p>',
                 ],
             ],
         ],

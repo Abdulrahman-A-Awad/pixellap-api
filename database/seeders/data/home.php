@@ -122,43 +122,43 @@ return [
         [
             'question' => ['en' => 'What services does Pixellap offer?', 'ar' => 'ما الخدمات التي تقدمها بكسل لاب؟'],
             'answer' => [
-                'en' => 'We offer six integrated disciplines: brand identity and design, media and content production, digital marketing, web design and development, creative and AI solutions, and training and workshops. You can work with us on a single project or as a full-service partner.',
-                'ar' => 'نقدم ستة تخصصات متكاملة: بناء الهوية البصرية والتصميم، وإنتاج المحتوى المرئي والمسموع، والتسويق الرقمي، وتصميم المواقع الإلكترونية وتطويرها، والحلول الإبداعية المدعومة بالذكاء الاصطناعي، والتدريب وورش العمل. ويمكنك التعاون معنا في مشروع واحد أو اعتمادنا شريكاً متكاملاً.',
+                'en' => '<p>We offer six integrated disciplines under one roof:</p><ul><li>Brand identity and design</li><li>Media and content production</li><li>Digital marketing</li><li>Web design and development</li><li>Creative and AI solutions</li><li>Training and workshops</li></ul><p>You can work with us on a single project or as a full-service partner.</p>',
+                'ar' => '<p>نقدم ستة تخصصات متكاملة تحت سقف واحد:</p><ul><li>بناء الهوية البصرية والتصميم</li><li>إنتاج المحتوى المرئي والمسموع</li><li>التسويق الرقمي</li><li>تصميم المواقع الإلكترونية وتطويرها</li><li>الحلول الإبداعية المدعومة بالذكاء الاصطناعي</li><li>التدريب وورش العمل</li></ul><p>ويمكنك التعاون معنا في مشروع واحد أو اعتمادنا شريكاً متكاملاً.</p>',
             ],
         ],
         [
             'question' => ['en' => 'How long does a typical project take?', 'ar' => 'كم يستغرق تنفيذ المشروع عادةً؟'],
             'answer' => [
-                'en' => 'It depends on scope. A logo or landing page can take two to three weeks; a full brand identity or corporate website usually takes six to ten weeks. We agree a clear timeline before we start.',
-                'ar' => 'يعتمد ذلك على نطاق العمل؛ فتصميم شعار أو صفحة هبوط قد يستغرق من أسبوعين إلى ثلاثة أسابيع، بينما تستغرق الهوية البصرية المتكاملة أو الموقع المؤسسي عادةً من ستة إلى عشرة أسابيع. ونتفق معك على جدول زمني واضح قبل البدء.',
+                'en' => '<p>It depends on the scope. Typical timelines:</p><ul><li><strong>Logo or landing page:</strong> two to three weeks</li><li><strong>Full brand identity or corporate website:</strong> six to ten weeks</li></ul><p>We agree a clear timeline with you before we start.</p>',
+                'ar' => '<p>يعتمد ذلك على نطاق العمل، وهذه هي المدد المعتادة:</p><ul><li><strong>شعار أو صفحة هبوط:</strong> من أسبوعين إلى ثلاثة أسابيع</li><li><strong>هوية بصرية متكاملة أو موقع مؤسسي:</strong> من ستة إلى عشرة أسابيع</li></ul><p>ونتفق معك على جدول زمني واضح قبل البدء.</p>',
             ],
         ],
         [
             'question' => ['en' => 'How do you price your work?', 'ar' => 'كيف تحددون تكلفة المشاريع؟'],
             'answer' => [
-                'en' => 'Every project is quoted individually based on scope, deliverables and timeline. For ongoing work such as social media management, we offer monthly retainers. You will always receive a detailed proposal before any commitment.',
-                'ar' => 'نُعدّ عرض سعر خاصاً لكل مشروع وفق نطاق العمل والمخرجات والجدول الزمني، ونوفر باقات شهرية للخدمات المستمرة مثل إدارة منصات التواصل الاجتماعي. وستتلقى دائماً عرضاً تفصيلياً قبل أي التزام.',
+                'en' => '<p>Every project is quoted individually.</p><ul><li><strong>Projects:</strong> priced on scope, deliverables and timeline</li><li><strong>Ongoing work</strong> such as social media management: a monthly retainer</li><li><strong>No surprises:</strong> you receive a detailed proposal before any commitment</li></ul>',
+                'ar' => '<p>نُعدّ عرض سعر خاصاً لكل مشروع.</p><ul><li><strong>المشاريع:</strong> تُسعَّر وفق نطاق العمل والمخرجات والجدول الزمني</li><li><strong>الخدمات المستمرة</strong> مثل إدارة منصات التواصل الاجتماعي: باقة شهرية</li><li><strong>دون مفاجآت:</strong> تتلقى عرضاً تفصيلياً قبل أي التزام</li></ul>',
             ],
         ],
         [
             'question' => ['en' => 'Do you work in both Arabic and English?', 'ar' => 'هل تعملون باللغتين العربية والإنجليزية؟'],
             'answer' => [
-                'en' => 'Yes. Our team creates content, copy and campaigns natively in Arabic and English, so your brand speaks naturally to every audience in the region.',
-                'ar' => 'نعم، يُعدّ فريقنا المحتوى والنصوص والحملات باللغتين العربية والإنجليزية بإتقان، لتخاطب علامتك كل جمهور في المنطقة بأسلوب طبيعي ومؤثر.',
+                'en' => '<p>Yes. Our team creates content, copy and campaigns natively in Arabic and English, so your brand speaks naturally to every audience in the region.</p>',
+                'ar' => '<p>نعم، يُعدّ فريقنا المحتوى والنصوص والحملات باللغتين العربية والإنجليزية بإتقان، لتخاطب علامتك كل جمهور في المنطقة بأسلوب طبيعي ومؤثر.</p>',
             ],
         ],
         [
             'question' => ['en' => 'Who do you work with?', 'ar' => 'مع من تعملون؟'],
             'answer' => [
-                'en' => 'We partner with start-ups, SMEs, government entities and established brands across the UAE and the wider GCC, in sectors from real estate and hospitality to retail and technology.',
-                'ar' => 'نتعاون مع الشركات الناشئة والصغيرة والمتوسطة والجهات الحكومية والعلامات التجارية الراسخة في دولة الإمارات ودول مجلس التعاون الخليجي، في قطاعات تشمل العقارات والضيافة والتجزئة والتكنولوجيا.',
+                'en' => '<p>We partner with organisations of every size across the UAE and the wider GCC:</p><ul><li>Start-ups and SMEs</li><li>Government entities</li><li>Established brands</li></ul><p>Our sectors range from real estate and hospitality to retail and technology.</p>',
+                'ar' => '<p>نتعاون مع جهات من مختلف الأحجام في دولة الإمارات ودول مجلس التعاون الخليجي:</p><ul><li>الشركات الناشئة والصغيرة والمتوسطة</li><li>الجهات الحكومية</li><li>العلامات التجارية الراسخة</li></ul><p>وتشمل القطاعات التي نخدمها العقارات والضيافة والتجزئة والتكنولوجيا.</p>',
             ],
         ],
         [
             'question' => ['en' => 'How do we get started?', 'ar' => 'كيف نبدأ العمل معاً؟'],
             'answer' => [
-                'en' => 'Send us a message through the contact form or WhatsApp. We will arrange a short call to understand your goals, then share a proposal within a few working days.',
-                'ar' => 'أرسل لنا رسالة عبر نموذج التواصل أو واتساب، وسنحدد معك مكالمة قصيرة لفهم أهدافك، ثم نرسل لك عرضاً مفصلاً خلال أيام عمل قليلة.',
+                'en' => '<p>Getting started takes three simple steps:</p><ul><li>Send us a message through the contact form or WhatsApp</li><li>We arrange a short call to understand your goals</li><li>You receive a proposal within a few working days</li></ul>',
+                'ar' => '<p>نبدأ العمل معاً في ثلاث خطوات بسيطة:</p><ul><li>أرسل لنا رسالة عبر نموذج التواصل أو واتساب</li><li>نحدد معك مكالمة قصيرة لفهم أهدافك</li><li>تتلقى عرضاً مفصلاً خلال أيام عمل قليلة</li></ul>',
             ],
         ],
     ],

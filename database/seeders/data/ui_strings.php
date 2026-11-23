@@ -44,7 +44,7 @@ return [
         'email' => ['Email address', 'البريد الإلكتروني'],
         'phone' => ['Phone number', 'رقم الهاتف'],
         'company' => ['Company', 'الشركة'],
-        'service' => ['Service of interest', 'الخدمة المطلوبة'],
+        'service' => ['Service needed', 'الخدمة المطلوبة'],
         'message' => ['Tell us about your project', 'أخبرنا عن مشروعك'],
         'success' => [
             'Thank you. Your message has been sent and we will be in touch shortly.',
@@ -113,6 +113,14 @@ return [
         // Short FAQ on the contact page.
         'faq_title' => ['Quick answers', 'إجابات سريعة'],
         'faq_more' => ['More questions', 'المزيد من الأسئلة'],
+        // Live opening status in the contact info card ({time} / {day} are localized by the website).
+        'open_now' => ['Open now', 'مفتوح الآن'],
+        'closed_now' => ['Closed', 'مغلق الآن'],
+        'closes_at' => ['Closes at {time}', 'يُغلق الساعة {time}'],
+        'opens_today' => ['Opens today at {time}', 'يفتح اليوم الساعة {time}'],
+        'opens_tomorrow' => ['Opens tomorrow at {time}', 'يفتح غداً الساعة {time}'],
+        'opens_at' => ['Opens {day} at {time}', 'يفتح يوم {day} الساعة {time}'],
+        'uae_time' => ['UAE time', 'بتوقيت الإمارات'],
     ],
 
     // Services index + category pages.

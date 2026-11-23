@@ -10,12 +10,15 @@ use App\Models\Setting;
 use App\Support\MimeTypes;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -84,6 +87,7 @@ class ManageSettings extends Page implements HasForms
         'address' => 'Address',
         'map_embed_url' => 'Map link (embed)',
         'working_hours' => 'Working hours',
+        'business_hours' => 'Opening hours (live “Open now” status)',
         'vat_number' => 'VAT number',
         'response_time' => 'Reply time promise',
         'socials' => 'Social media links',
@@ -102,6 +106,7 @@ class ManageSettings extends Page implements HasForms
         'address' => 'Shown on the Contact page and footer.',
         'map_embed_url' => 'Google Maps → Share → Embed a map → copy the src URL. Empty = no map.',
         'working_hours' => 'Shown on the Contact page and footer, e.g. Mon–Fri 9:00–18:00.',
+        'business_hours' => 'Used for the “Open now / Closed” status on the Contact page. Times are UAE time (Asia/Dubai). No days ticked = no status shown.',
         'vat_number' => 'Shown in the footer (TRN).',
         'response_time' => 'Shown near the contact buttons, e.g. “We reply within 24 hours.”',
         'socials' => 'Full links to your profiles. Empty ones are not shown in the footer.',
@@ -163,6 +168,10 @@ class ManageSettings extends Page implements HasForms
         $label = self::LABELS[$key] ?? Str::headline($key);
         $help = isset(self::HELP[$key]) ? __(self::HELP[$key]) : null;
 
+        if ($key === 'business_hours') {
+            return $this->businessHoursField($key, $label, $help);
+        }
+
         return match ($setting->type) {
             Setting::TYPE_TRANSLATABLE => Fields::bilingual(
                 $key,
@@ -209,6 +218,36 @@ class ManageSettings extends Page implements HasForms
                 ->maxLength(1000)
                 ->when(in_array($key, self::URL_KEYS, true), fn (TextInput $input) => $input->url()),
         };
+    }
+
+    /** Structured opening hours: working days + open / close time (UAE time; the timezone is kept as is). */
+    private function businessHoursField(string $key, string $label, ?string $help): Component
+    {
+        $days = [];
+        foreach (['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday'] as $day => $name) {
+            $days[$day] = __($name);
+        }
+
+        return Fieldset::make(__($label))->columns(2)->schema([
+            CheckboxList::make("{$key}.days")
+                ->label(__('Working days'))
+                ->helperText($help)
+                ->options($days)
+                ->columns(['default' => 2, 'md' => 4])
+                ->columnSpanFull(),
+            TimePicker::make("{$key}.open")
+                ->label(__('Opens at'))
+                ->seconds(false)
+                ->format('H:i')
+                ->required(),
+            TimePicker::make("{$key}.close")
+                ->label(__('Closes at'))
+                ->seconds(false)
+                ->format('H:i')
+                ->required()
+                ->after("{$key}.open"),
+            Hidden::make("{$key}.timezone")->default('Asia/Dubai'),
+        ]);
     }
 
     public function save(): void

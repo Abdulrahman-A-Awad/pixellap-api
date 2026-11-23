@@ -52,6 +52,13 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - New UI strings on existing installs: add them to `data/ui_strings.php` AND a small data migration that `firstOrCreate`s
   just those keys (e.g. `2026_11_21_100000_add_missing_ui_strings_refine_home`) — deploys run migrations; `UiStringSeeder`
   uses `updateOrCreate` and would overwrite texts editors changed in the admin.
+- Rewriting seeded copy on existing installs: update `data/*.php` AND a data migration that replaces a value only while it
+  still equals the ORIGINAL seed text, matched by text not position (e.g. `2026_11_24_100000_faq_answers_readable`,
+  reversible) — editor changes are never overwritten.
+- `business_hours` setting (json `{days: ['mon'…], open: 'HH:MM', close: 'HH:MM', timezone}`): edited in Site settings →
+  Contact (day checkboxes + time pickers, close must be after open); `/site` returns it normalised by
+  `PublicContent::businessHours()` (null when unusable). The website's "Open now / Closed" chip uses it; `working_hours`
+  stays the display text.
 - Tests: `php artisan test` (in-memory SQLite, does not touch MySQL).
 
 ## Admin panel (Filament)

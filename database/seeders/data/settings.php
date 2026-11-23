@@ -38,6 +38,13 @@ return [
         'en' => 'Monday – Friday, 9:00 am – 6:00 pm',
         'ar' => 'من الاثنين إلى الجمعة، 9:00 صباحاً – 6:00 مساءً',
     ]],
+    // Structured opening hours for the website's live "Open now / Closed" status (working_hours stays the display text).
+    ['key' => 'business_hours', 'group' => 'contact', 'type' => 'json', 'value' => [
+        'days' => ['mon', 'tue', 'wed', 'thu', 'fri'],
+        'open' => '09:00',
+        'close' => '18:00',
+        'timezone' => 'Asia/Dubai',
+    ]],
     ['key' => 'vat_number', 'group' => 'contact', 'type' => 'text', 'value' => 'TODO: 100000000000000'],
     ['key' => 'response_time', 'group' => 'contact', 'type' => 'translatable', 'value' => [
         'en' => 'We reply within 24 hours.',
