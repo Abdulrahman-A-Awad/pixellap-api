@@ -71,6 +71,10 @@ return [
         'sending' => ['Sending...', 'جارٍ الإرسال...'],
         'success_title' => ['Message sent', 'تم إرسال رسالتك'],
         'send_another' => ['Send another message', 'إرسال رسالة أخرى'],
+        // Service chips: "Other" sends no category.
+        'other' => ['Other', 'أخرى'],
+        'char_count' => ['{count} of {max} characters', 'عدد الأحرف: {count} من {max}'],
+        'error_summary' => ['Please check the highlighted fields:', 'يُرجى مراجعة الحقول التالية:'],
     ],
 
     'contact' => [
@@ -84,6 +88,31 @@ return [
         'map_title' => ['Our location on the map', 'موقعنا على الخريطة'],
         // Prefilled message when arriving from "Request this service" ({item} = service title).
         'interested_in' => ["I'm interested in: {item}", 'أودّ الاستفسار عن: {item}'],
+        // Quick contact cards (contact page).
+        'quick_title' => ['Quick contact', 'تواصل سريع'],
+        'chat_title' => ['Chat with us', 'تحدّث معنا'],
+        'email_title' => ['Write to us', 'راسلنا'],
+        'call_title' => ['Call us', 'اتصل بنا'],
+        // "What happens next" (contact page).
+        'next_title' => ['What happens next', 'ماذا يحدث بعد ذلك؟'],
+        'next_1_title' => ['We review your message', 'نراجع رسالتك'],
+        'next_1_text' => [
+            'A member of our team reads every request carefully.',
+            'يطّلع أحد أعضاء فريقنا على كل طلب بعناية.',
+        ],
+        'next_2_title' => ['We contact you within 24 hours', 'نتواصل معك خلال 24 ساعة'],
+        'next_2_text' => [
+            'We reply by email or phone to understand your goals.',
+            'نردّ عليك عبر البريد الإلكتروني أو الهاتف لفهم أهدافك.',
+        ],
+        'next_3_title' => ['You receive a tailored proposal', 'تتلقّى عرضاً مصمّماً لك'],
+        'next_3_text' => [
+            'A clear scope, timeline and price, built around your project.',
+            'نطاق عمل واضح وجدول زمني وتكلفة، مبنية حول مشروعك.',
+        ],
+        // Short FAQ on the contact page.
+        'faq_title' => ['Quick answers', 'إجابات سريعة'],
+        'faq_more' => ['More questions', 'المزيد من الأسئلة'],
     ],
 
     // Services index + category pages.
