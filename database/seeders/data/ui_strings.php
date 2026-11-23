@@ -159,6 +159,11 @@ return [
         'nav_label' => ['Our disciplines', 'تخصصاتنا'],
         'details' => ['Details', 'التفاصيل'],
         'explore' => ['Explore {category}', 'استكشف {category}'],
+        // Category page: hero facts, actions, process eyebrow, closing CTA.
+        'fact_bilingual' => ['Arabic & English delivery', 'تنفيذ بالعربية والإنجليزية'],
+        'explore_services' => ['Explore the services', 'استكشف الخدمات'],
+        'process_eyebrow' => ['How we deliver', 'كيف ننفّذ'],
+        'cta_title' => ['Ready to start your {category} project?', 'هل أنت مستعد لبدء مشروعك في {category}؟'],
     ],
 
     // FAQ help card (home + category pages).
