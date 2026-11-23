@@ -14,6 +14,7 @@ use App\Services\PublicContent;
 use App\Support\ApiResponder;
 use App\Support\CacheTags;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -52,10 +53,11 @@ class ContentController extends Controller
         );
     }
 
-    public function categories(): JsonResponse
+    public function categories(Request $request): JsonResponse
     {
+        // ?include=services (services index) is a separate cache entry under the same tag.
         return $this->responder->cached(
-            'service-categories',
+            ServiceCategoryResource::includesServices($request) ? 'service-categories?include=services' : 'service-categories',
             [CacheTags::CATEGORIES],
             fn () => ServiceCategoryResource::collection($this->content->categories()),
         );

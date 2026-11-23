@@ -997,6 +997,39 @@ and for `generateStaticParams`.
 }
 ```
 
+#### `?include=services` (services index page)
+
+Adds three fields to every category: the rich `description` (HTML), the `hero_video` (or `null`) and
+`services`: the visible services as light rows, in display order. `short` is the first sentence of the
+service description (plain text, at most 140 characters; longer text is cut at a word and ends with
+`...`). `anchor` is a stable in-page id: the slugified **English** title (the same in both locales),
+unique within the category (`-2`, `-3`... for repeats). The category page uses the same value as the
+service card's `id`, so `/services/{slug}#{anchor}` always lands on that card. Cached separately from
+the plain list, under the same `categories` tag.
+
+`GET /api/v1/service-categories?include=services&locale=en`
+
+```json
+{
+  "slug": "brand-identity-design",
+  "title": "Brand Identity & Design",
+  "excerpt": "Distinctive brands, built on strategy and crafted with care.",
+  "icon": null,
+  "cover": { "url": "..." },
+  "services_count": 7,
+  "description": "We build brands that are clear in purpose...",
+  "hero_video": null,
+  "services": [
+    {
+      "id": 1,
+      "title": "Brand Strategy & Positioning",
+      "short": "We define what your brand stands for, who it serves and how it differs from competitors.",
+      "anchor": "brand-strategy-positioning"
+    }
+  ]
+}
+```
+
 ### GET /service-categories/{slug}
 
 One category with its visible services (each with `features: string[]`) and its own visible FAQs.
@@ -1023,6 +1056,7 @@ A hidden or unknown slug returns **404**: call `notFound()`.
     "services": [
       {
         "id": 1,
+        "anchor": "brand-strategy-positioning",
         "title": "Brand Strategy & Positioning",
         "description": "We define what your brand stands for, who it serves and how it differs from competitors.",
         "features": [
@@ -1035,6 +1069,7 @@ A hidden or unknown slug returns **404**: call `notFound()`.
       },
       {
         "id": 2,
+        "anchor": "visual-identity-design",
         "title": "Visual Identity Design",
         "description": "A complete visual system — colour, typography, imagery and graphic elements — that makes your brand instantly recognisable.",
         "features": [
@@ -1047,6 +1082,7 @@ A hidden or unknown slug returns **404**: call `notFound()`.
       },
       {
         "id": 3,
+        "anchor": "logo-design",
         "title": "Logo Design",
         "description": "Original, timeless logos designed to work across every size, screen and language.",
         "features": [

@@ -102,6 +102,9 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   `App\Services\PublicContent`; JSON shape in `app/Http/Resources/V1` (`MediaResource` for every file).
 - `App\Support\ApiResponder` wraps `{data, meta}` and caches the encoded JSON 1 h per endpoint+params+locale
   through `App\Support\ApiCache` (tag registry under `api_tags:{tag}` — works on file/database cache).
+- Service anchors: `App\Support\ServiceAnchors` (slugified English title, unique per category, `short` = first
+  sentence ≤ 140 chars) feeds BOTH `GET /service-categories?include=services` and the category detail's `services[].anchor`
+  — the website deep-links `/services/{slug}#{anchor}`, so never compute anchors anywhere else.
 - GETs use `throttle:120,1,api` (named counter). Contact uses the `contact` RateLimiter (AppServiceProvider):
   5/min keyed by `App\Support\ClientIp` — `X-Client-IP` only with a valid `X-Site-Key`, else `$request->ip()`;
   the same IP is stored on the lead. Never trust `X-Client-IP` anywhere else.

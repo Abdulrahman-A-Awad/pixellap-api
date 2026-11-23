@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\V1;
 
+use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Support\ServiceAnchors;
 use Illuminate\Http\Request;
 
 /**
@@ -18,6 +20,7 @@ class ServiceCategoryDetailResource extends Resource
     public function toArray(Request $request): array
     {
         $category = $this->resource;
+        $anchors = ServiceAnchors::for($category->services);
 
         return [
             'slug' => $category->slug,
@@ -31,7 +34,9 @@ class ServiceCategoryDetailResource extends Resource
             'icon' => MediaResource::fromModel($category, 'icon'),
             'cover' => MediaResource::fromModel($category, 'cover'),
             'hero_video' => MediaResource::fromModel($category, 'hero_video'),
-            'services' => ServiceResource::collection($category->services),
+            'services' => $category->services
+                ->map(fn (Service $service) => (new ServiceResource($service))->withAnchor($anchors[$service->id]))
+                ->values(),
             'faqs' => FaqResource::collection($category->faqs),
             'updated_at' => $category->updated_at?->toIso8601String(),
         ];

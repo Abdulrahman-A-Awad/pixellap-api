@@ -139,6 +139,26 @@ return [
         'request' => ['Request this service', 'اطلب هذه الخدمة'],
         'faq_title' => ['Frequently asked questions', 'الأسئلة الشائعة'],
         'explore_other' => ['Explore other services', 'استكشف خدماتنا الأخرى'],
+        // Services index page (hero stat line, search, discipline nav and showcases).
+        'hero_eyebrow' => ['What we do', 'ماذا نقدّم'],
+        'disciplines_zero' => ['{count} disciplines', 'لا توجد تخصصات'],
+        'disciplines_one' => ['{count} discipline', 'تخصص واحد'],
+        'disciplines_two' => ['{count} disciplines', 'تخصصان'],
+        'disciplines_few' => ['{count} disciplines', '{count} تخصصات'],
+        'disciplines_many' => ['{count} disciplines', '{count} تخصصاً'],
+        'disciplines_other' => ['{count} disciplines', '{count} تخصص'],
+        'search_label' => ['Search our services', 'ابحث في خدماتنا'],
+        'search_placeholder' => ['Search all services', 'ابحث في جميع الخدمات'],
+        'search_hint' => [
+            'Type to search. Use the arrow keys to move and Enter to open a service.',
+            'اكتب للبحث، واستخدم مفاتيح الأسهم للتنقل، ثم Enter لفتح الخدمة.',
+        ],
+        'search_results' => ['Matching services: {count}', 'عدد الخدمات المطابقة: {count}'],
+        'search_clear' => ['Clear search', 'مسح البحث'],
+        'search_empty' => ['No services match "{query}".', 'لا توجد خدمات تطابق "{query}".'],
+        'nav_label' => ['Our disciplines', 'تخصصاتنا'],
+        'details' => ['Details', 'التفاصيل'],
+        'explore' => ['Explore {category}', 'استكشف {category}'],
     ],
 
     // FAQ help card (home + category pages).
