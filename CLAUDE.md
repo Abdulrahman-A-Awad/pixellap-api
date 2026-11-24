@@ -129,7 +129,8 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 - Deploy kit + runbook: `deploy/README.md` (one Ubuntu 24.04 box: Nginx, PHP 8.3-FPM pool `pixellap` running as
   `deploy`, MySQL 8, PM2 for the website, queue worker = `pixellap-queue` systemd service, cron for the scheduler + backups).
   Env template: `.env.production.example`. Scripts in `deploy/scripts` must stay `shellcheck`-clean.
-- Commands: `pixellap:check-production` (fails on debug/secrets/default admin/TODO settings/storage link/queue tables),
+- Commands: `pixellap:check-production` (fails on debug/secrets/default admin/TODO settings/storage link/queue tables/
+  SMTP placeholders + invalid from/notify addresses),
   `pixellap:create-super-admin` (production has NO seeded admin — `RoleSeeder` skips it when `APP_ENV=production`),
   `pixellap:revalidate-all` (sync full refresh; deploy scripts call it).
 - Media commands (revalidate once at the end): `pixellap:attach-hero-media {dir}` (hero-{wide,vertical}.{webm,mp4} +

@@ -35,6 +35,9 @@ class CheckProduction extends Command
 
     public function handle(): int
     {
+        // The command instance is reused when called twice in one process (tests, Artisan::call).
+        $this->problems = $this->warnings = [];
+
         $this->checkConfig();
         $this->checkDatabase();
         $this->checkFilesystem();
@@ -87,11 +90,41 @@ class CheckProduction extends Command
         if (config('session.secure') !== true) {
             $this->warnings[] = 'SESSION_SECURE_COOKIE is not true.';
         }
-        if (in_array(config('mail.default'), ['log', 'array'], true)) {
-            $this->warnings[] = 'MAIL_MAILER is "'.config('mail.default').'": contact emails are not delivered.';
-        }
+        $this->checkMail();
+
         if (blank(config('pixellap.frontend_revalidate_url'))) {
             $this->warnings[] = 'FRONTEND_REVALIDATE_URL is empty: admin edits will not refresh the website.';
+        }
+    }
+
+    /** Contact leads must reach a real inbox: no log mailer, no CHANGE_ME placeholders, valid addresses. */
+    private function checkMail(): void
+    {
+        $mailer = (string) config('mail.default');
+
+        if (in_array($mailer, ['log', 'array'], true)) {
+            $this->warnings[] = "MAIL_MAILER is \"{$mailer}\": contact emails are not delivered.";
+
+            return;
+        }
+
+        if ($mailer === 'smtp') {
+            foreach (['MAIL_HOST' => 'host', 'MAIL_USERNAME' => 'username', 'MAIL_PASSWORD' => 'password'] as $env => $key) {
+                $value = (string) config("mail.mailers.smtp.{$key}");
+                if ($value === '' || str_contains($value, 'CHANGE_ME')) {
+                    $this->problems[] = "{$env} is empty or still a CHANGE_ME placeholder.";
+                }
+            }
+            $scheme = config('mail.mailers.smtp.scheme');
+            if ((int) config('mail.mailers.smtp.port') === 465 && $scheme !== 'smtps') {
+                $this->problems[] = 'MAIL_PORT is 465 but MAIL_SCHEME is not "smtps" (implicit TLS).';
+            }
+        }
+
+        foreach (['MAIL_FROM_ADDRESS' => config('mail.from.address'), 'CONTACT_NOTIFY_EMAIL' => config('pixellap.contact_notify_email')] as $env => $value) {
+            if (! is_string($value) || str_contains($value, 'CHANGE_ME') || ! filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                $this->problems[] = "{$env} is not a real email address.";
+            }
         }
     }
 

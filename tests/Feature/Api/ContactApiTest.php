@@ -69,7 +69,9 @@ class ContactApiTest extends TestCase
             return $mail->hasTo('leads@pixellap.test')
                 && $mail->contactMessage->is($message)
                 && str_contains($mail->adminUrl, "/admin/contact-messages/{$message->id}")
-                && $mail->locale === 'en';
+                && $mail->locale === 'en'
+                && $mail->hasReplyTo('layla@example.com', 'Layla Ahmed')
+                && $mail->hasSubject('New inquiry — Layla Ahmed — '.$message->serviceCategory->getTranslation('title', 'en'));
         });
 
         Notification::assertSentTo([$admin, $sales], DatabaseNotification::class);
@@ -93,6 +95,7 @@ class ContactApiTest extends TestCase
 
         $this->assertStringContainsString('Layla Ahmed', $html);
         $this->assertStringContainsString('http://localhost/admin/contact-messages/1', $html);
+        $this->assertSame('New inquiry — Layla Ahmed', (new NewContactMessage($message, 'x'))->subjectLine());
     }
 
     public function test_honeypot_returns_201_without_storing(): void

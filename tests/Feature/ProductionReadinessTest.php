@@ -80,6 +80,38 @@ class ProductionReadinessTest extends TestCase
             ->assertFailed();
     }
 
+    public function test_check_production_flags_placeholder_smtp_settings(): void
+    {
+        $this->seed();
+        $this->makeProductionReady();
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => 'smtp.CHANGE_ME.com',
+            'mail.mailers.smtp.username' => 'CHANGE_ME',
+            'mail.mailers.smtp.password' => '',
+            'mail.mailers.smtp.port' => 465,
+            'mail.mailers.smtp.scheme' => 'smtp',
+            'pixellap.contact_notify_email' => 'CHANGE_ME@ppixelmedia.com',
+        ]);
+
+        $this->artisan('pixellap:check-production')
+            ->expectsOutputToContain('MAIL_HOST is empty or still a CHANGE_ME placeholder')
+            ->expectsOutputToContain('MAIL_PASSWORD is empty or still a CHANGE_ME placeholder')
+            ->expectsOutputToContain('MAIL_SCHEME is not "smtps"')
+            ->expectsOutputToContain('CONTACT_NOTIFY_EMAIL is not a real email address')
+            ->assertFailed();
+
+        config([
+            'mail.mailers.smtp.host' => 'smtp.hostinger.com',
+            'mail.mailers.smtp.username' => 'info@ppixelmedia.com',
+            'mail.mailers.smtp.password' => 'secret',
+            'mail.mailers.smtp.scheme' => 'smtps',
+            'mail.from.address' => 'info@ppixelmedia.com',
+            'pixellap.contact_notify_email' => 'info@ppixelmedia.com',
+        ]);
+        $this->artisan('pixellap:check-production')->assertSuccessful();
+    }
+
     public function test_role_seeder_creates_no_default_admin_in_production(): void
     {
         $this->asProduction();
