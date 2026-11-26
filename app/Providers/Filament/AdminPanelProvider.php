@@ -6,6 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\RoleResource;
 use App\Filament\Support\NavGroup;
 use App\Http\Controllers\Admin\SwitchAdminLocaleController;
 use App\Http\Middleware\RequireHttps;
@@ -89,6 +90,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->globalSearch()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            // Our simple roles editor. Registered BEFORE the Shield plugin: Shield adds its own RoleResource
+            // unless the panel already lists a "\RoleResource" when the plugin registers (discovery runs later).
+            ->resources([
+                RoleResource::class,
+            ])
             ->plugins([
                 SpatieLaravelTranslatablePlugin::make()
                     ->defaultLocales(['en', 'ar']),

@@ -160,6 +160,9 @@ class AdminPolishTest extends TestCase
         $this->assertTrue(Gate::denies('delete', $super));
 
         $this->get("/admin/roles/{$super->id}/edit")->assertForbidden();
+        // Shield's default editor must not be registered next to ours.
+        $this->get('/admin/shield/roles')->assertNotFound();
+        $this->get("/admin/shield/roles/{$super->id}/edit")->assertNotFound();
         $this->get('/admin/roles')->assertOk()->assertSee('Full access')->assertSee('Super Admin');
     }
 
