@@ -25,7 +25,6 @@ use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
@@ -96,8 +95,6 @@ class AdminPanelProvider extends PanelProvider
                 RoleResource::class,
             ])
             ->plugins([
-                SpatieLaravelTranslatablePlugin::make()
-                    ->defaultLocales(['en', 'ar']),
                 FilamentShieldPlugin::make(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

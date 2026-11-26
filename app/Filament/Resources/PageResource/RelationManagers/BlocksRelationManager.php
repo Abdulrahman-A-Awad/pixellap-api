@@ -9,11 +9,13 @@ use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Filament\Support\Fields;
 use App\Filament\Support\TableKit;
 use Closure;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -26,11 +28,13 @@ use Illuminate\Database\Eloquent\Model;
  *  mission_vision → title + items (exactly 2: title + text)
  *  values         → title + items (up to 6: title + text)
  *  cta            → title + body
+ *
+ * English | Arabic side by side (no language switcher). `items` is stored per language
+ * ({en: [{title, text}], ar: [...]}): one cards list per language; only English enforces the count.
  */
 class BlocksRelationManager extends RelationManager
 {
     use RevalidatesOnReorder;
-    use Translatable;
 
     protected static string $relationship = 'blocks';
 
@@ -62,6 +66,41 @@ class BlocksRelationManager extends RelationManager
         return fn (Get $get): bool => in_array(self::type($get), $types, true);
     }
 
+    private static function maxCards(Get $get): int
+    {
+        return self::type($get) === PageBlockType::MissionVision ? 2 : 6;
+    }
+
+    /** One language's cards list. */
+    private static function cards(string $locale): Repeater
+    {
+        $dir = $locale === 'ar' ? 'rtl' : 'ltr';
+        $isEnglish = $locale === 'en';
+
+        return Repeater::make("items.{$locale}")
+            ->label(__('Cards').($isEnglish ? ' — English' : ' — العربية'))
+            ->schema([
+                TextInput::make('title')->label('Title')->required()->maxLength(255)
+                    ->extraInputAttributes(['dir' => $dir, 'lang' => $locale]),
+                Textarea::make('text')->label('Text')->required()->rows(2)->autosize()
+                    ->extraInputAttributes(['dir' => $dir, 'lang' => $locale]),
+            ])
+            ->minItems(fn (Get $get): int => $isEnglish ? (self::type($get) === PageBlockType::MissionVision ? 2 : 1) : 0)
+            ->maxItems(fn (Get $get): int => self::maxCards($get))
+            ->defaultItems(fn (Get $get): int => $isEnglish ? (self::type($get) === PageBlockType::MissionVision ? 2 : 1) : 0)
+            ->reorderable()
+            ->collapsible()
+            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+            ->live()
+            ->when(! $isEnglish, fn (Repeater $repeater) => $repeater
+                // Not blocking: missing Arabic cards fall back to English on the website.
+                ->hint(fn (?array $state, Get $get): ?string => count($state ?? []) < count((array) $get('items.en')) ? __('Arabic missing') : null)
+                ->hintIcon(fn (?array $state, Get $get): ?string => count($state ?? []) < count((array) $get('items.en')) ? 'heroicon-m-exclamation-triangle' : null)
+                ->hintColor('warning'))
+            ->when($isEnglish, fn (Repeater $repeater) => $repeater
+                ->helperText(__('Mission & vision: exactly 2 cards. Values: 1 to 6 cards.')));
+    }
+
     public function form(Form $form): Form
     {
         return $form->columns(1)->schema([
@@ -73,12 +112,9 @@ class BlocksRelationManager extends RelationManager
                 ->live()
                 ->native(false),
 
-            Fields::text('title')->label('Heading')
-                ->helperText(__('Optional heading shown above the block.')),
+            Fields::bilingual('title', 'Heading', help: __('Optional heading shown above the block.'), maxLength: 255),
 
-            Fields::textarea('body', 6)
-                ->label('Text')
-                ->helperText(__('Leave an empty line between paragraphs.'))
+            Fields::bilingual('body', 'Text', 'textarea', __('Leave an empty line between paragraphs.'), rows: 6)
                 ->visible(self::forTypes([PageBlockType::Text, PageBlockType::ImageText, PageBlockType::Cta])),
 
             Fields::image('image')
@@ -86,19 +122,8 @@ class BlocksRelationManager extends RelationManager
                 ->helperText(__('Shown beside the text. Landscape or square, at least 1200 px wide.'))
                 ->visible(self::forTypes([PageBlockType::ImageText])),
 
-            Repeater::make('items')
-                ->label('Cards')
-                ->helperText(__('Mission & vision: exactly 2 cards. Values: 1 to 6 cards.'))
-                ->schema([
-                    Fields::text('title')->label('Title')->required(),
-                    Fields::textarea('text', 2)->label('Text')->required(),
-                ])
-                ->minItems(fn (Get $get): int => self::type($get) === PageBlockType::MissionVision ? 2 : 1)
-                ->maxItems(fn (Get $get): int => self::type($get) === PageBlockType::MissionVision ? 2 : 6)
-                ->defaultItems(fn (Get $get): int => self::type($get) === PageBlockType::MissionVision ? 2 : 1)
-                ->reorderable()
-                ->collapsible()
-                ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+            Grid::make(['default' => 1, 'lg' => 2])
+                ->schema([self::cards('en'), self::cards('ar')])
                 ->visible(self::forTypes([PageBlockType::MissionVision, PageBlockType::Values])),
 
             Fields::visible(),
@@ -113,11 +138,10 @@ class BlocksRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('sort')->label('#')->width('1%'),
                 Tables\Columns\TextColumn::make('type')->label('Type')->badge(),
-                Tables\Columns\TextColumn::make('title')->label('Title')->wrap(),
+                ...TableKit::bilingualColumns('title', 'Title'),
                 TableKit::visibleToggle(),
             ])
             ->headerActions([
-                Tables\Actions\LocaleSwitcher::make(),
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([

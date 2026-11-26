@@ -8,16 +8,15 @@ use App\Filament\Concerns\RevalidatesOnReorder;
 use App\Filament\Support\Fields;
 use App\Filament\Support\TableKit;
 use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
+/** FAQs of a service category. English | Arabic side by side (no language switcher). */
 class FaqsRelationManager extends RelationManager
 {
     use RevalidatesOnReorder;
-    use Translatable;
 
     protected static string $relationship = 'faqs';
 
@@ -39,9 +38,8 @@ class FaqsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->columns(1)->schema([
-            Fields::text('question')->label('Question')->required()->maxLength(500),
-            Fields::rich('answer')->label('Answer')->required()
-                ->helperText(__('Shown when the visitor opens the question.')),
+            Fields::bilingual('question', 'Question', required: true),
+            Fields::bilingual('answer', 'Answer', 'rich', __('Shown when the visitor opens the question.'), required: true),
             Fields::visible(),
         ]);
     }
@@ -52,11 +50,10 @@ class FaqsRelationManager extends RelationManager
             ->reorderable('sort')
             ->defaultSort('sort')
             ->columns([
-                Tables\Columns\TextColumn::make('question')->label('Question')->wrap()->weight('bold'),
+                ...TableKit::bilingualColumns('question', 'Question'),
                 TableKit::visibleToggle(),
             ])
             ->headerActions([
-                Tables\Actions\LocaleSwitcher::make(),
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([

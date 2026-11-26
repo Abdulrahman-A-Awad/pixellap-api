@@ -11,7 +11,6 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListServiceCategories extends ListRecords
 {
-    use ListRecords\Concerns\Translatable;
     use RevalidatesOnReorder;
 
     protected static string $resource = ServiceCategoryResource::class;
@@ -19,7 +18,6 @@ class ListServiceCategories extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
             Actions\CreateAction::make(),
         ];
     }

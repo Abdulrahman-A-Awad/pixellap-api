@@ -10,18 +10,16 @@ use App\Filament\Support\TableKit;
 use App\Models\Service;
 use App\Support\MimeTypes;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
+/** Services inside a category. English | Arabic side by side (no language switcher). */
 class ServicesRelationManager extends RelationManager
 {
     use RevalidatesOnReorder;
-    use Translatable;
 
     protected static string $relationship = 'services';
 
@@ -43,16 +41,10 @@ class ServicesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->columns(1)->schema([
-            Fields::text('title')->label('Title')->required()
-                ->helperText(__('Shown as the card heading on the service page.')),
-            Fields::textarea('description')->label('Description')->required()
-                ->helperText(__('Two or three sentences under the heading.')),
-            TagsInput::make('features')
-                ->label('Features')
-                ->reorderable()
-                ->placeholder(__('Type a feature and press Enter'))
-                ->helperText(__('Shown as a checklist. Each language has its own list — switch the language to edit the other.')),
-            Grid::make(2)->schema([
+            Fields::bilingual('title', 'Title', help: __('Shown as the card heading on the service page.'), required: true, maxLength: 255),
+            Fields::bilingual('description', 'Description', 'textarea', __('Two or three sentences under the heading.'), required: true),
+            Fields::bilingual('features', 'Features', 'tags', __('Shown as a checklist. Type a feature and press Enter.')),
+            Grid::make(['default' => 1, 'md' => 2])->schema([
                 Fields::vectorOrImage('icon', MimeTypes::ICONS)->label('Icon')
                     ->helperText(__('Optional. SVG/PNG, square. Empty = a brand pixel icon.')),
                 Fields::image('image')->label('Photo')
@@ -62,6 +54,14 @@ class ServicesRelationManager extends RelationManager
         ]);
     }
 
+    /** @return array{en: int, ar: int} */
+    private static function featureCounts(Service $record): array
+    {
+        $count = fn (string $locale): int => count(array_filter((array) $record->getTranslation('features', $locale, false)));
+
+        return ['en' => $count('en'), 'ar' => $count('ar')];
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -69,19 +69,19 @@ class ServicesRelationManager extends RelationManager
             ->defaultSort('sort')
             ->columns([
                 Tables\Columns\TextColumn::make('sort')->label('#')->width('1%'),
-                Tables\Columns\TextColumn::make('title')->label('Title')->weight('bold')->wrap(),
+                ...TableKit::bilingualColumns('title', 'Title'),
                 Tables\Columns\TextColumn::make('features_count')
                     ->label('Features')
-                    ->state(fn (Service $record): int => count((array) $record->getTranslation('features', $this->activeLocale ?? 'en', false)))
+                    // Left-to-right isolate so the counts stay in order in Arabic mode.
+                    ->state(fn (Service $record): string => "\u{2066}EN ".self::featureCounts($record)['en'].' · AR '.self::featureCounts($record)['ar']."\u{2069}")
                     ->badge()
-                    ->color('gray'),
+                    ->color(fn (Service $record): string => self::featureCounts($record)['ar'] < self::featureCounts($record)['en'] ? 'warning' : 'gray'),
                 TableKit::visibleToggle(),
             ])
             ->filters([
                 TableKit::visibleFilter(),
             ])
             ->headerActions([
-                Tables\Actions\LocaleSwitcher::make(),
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([

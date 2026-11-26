@@ -84,22 +84,25 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   `HomeSectionKey::fields()` — the form and the API hide what the website does not render.
 - Build translatable inputs with `App\Filament\Support\Fields` (`text`/`textarea`/`rich` add `dir="auto"`;
   `image`/`vectorOrImage`/`video` apply upload limits). Shared table bits: `App\Filament\Support\TableKit`.
-- **Home Page (sections + embedded item tables) and Site settings: NO language switcher.** Every translatable field is
+- **NO language switcher anywhere in the admin** (Home Page, Site settings, Services + their services/FAQs, Pages + blocks;
+  no `Translatable` concerns, no `LocaleSwitcher`, no SpatieLaravelTranslatablePlugin). Every translatable field is
   `Fields::bilingual($name, $label, 'text'|'textarea'|'rich', $help, required:)` (EN | AR side by side, `{name}.en/.ar`;
   EN required when the field is; empty AR = warning hint only), tables use `TableKit::bilingualColumns()` ("AR missing"
   badge). Each section form starts with `HomeSectionKey::where()`; sections that need items show
   `emptyNotice()` + a "Hidden: no items" list badge (`HomeSectionResource::isHiddenForNoItems`). The hero has no title
   (H1 = tagline setting). Hero video uploads are `previewable(false)->openable()` (no download on page load).
-- Other translatable resources (Services, Pages): `use Translatable` on the resource + page concerns + `LocaleSwitcher`
-  header action; relation managers use the RM `Translatable` concern + `Tables\Actions\LocaleSwitcher`.
+  Lists per language: `Fields::bilingual(..., 'tags')` (service features) and two repeaters `items.en` | `items.ar` (page
+  blocks; only English enforces the card count). `tap:` customises each input (max length, slug from `title.en`).
+- Global search is Arabic-aware: resources override `applyGlobalSearchAttributeConstraints()` with
+  `App\Support\ArabicSearch::apply()` (locale JSON paths, diacritics / أإآ normalised on both sides, LIKE wildcards escaped).
+  Add new searchable resources the same way.
 - `site_name` is a translatable setting ("Pixellap" / "بكسل لاب"). Brand icons for the admin: `resources/svg/brands`
   (blade-icons set `brand-*`, registered in `AppServiceProvider::register`).
 - Admin UI language: ONE switch, the user-menu item → `POST /admin/locale/{en|ar}` (`SwitchAdminLocaleController`) writes
   `users.admin_locale` (default `ar` for new accounts; factories/the local dev admin use `en` because tests assert English)
   + an `admin_locale` cookie for the login page. `SetAdminLocale` (must run BEFORE `DispatchServingFilamentEvent`, which
   builds the navigation) reads them, falling back to `ar`. Never add another language field/toggle. Admin labels are
-  English and translated via `lang/ar.json` — add every new label there. (Services/Pages content `LocaleSwitcher`s choose
-  which translation you edit; they are not UI language switches.)
+  English and translated via `lang/ar.json` — add every new label there.
 - Permissions: Shield. **Re-generate with `php artisan shield:generate --all --panel=admin --ignore-existing-policies`**
   — `UserPolicy` and `UiStringPolicy` contain hand-written rules; `ServicePolicy`/`PageBlockPolicy` are hand-made.
   The seeded role → permission sets are `ShieldPermissionSeeder` (idempotent, part of `DatabaseSeeder`).

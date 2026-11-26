@@ -9,6 +9,7 @@ use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -55,7 +56,10 @@ final class Fields
      * (no language switcher: an empty Arabic value used to show the English text silently).
      * English is required when `$required`; an empty Arabic value only shows a warning hint.
      *
-     * @param  'text'|'textarea'|'rich'  $kind
+     * `$tap` customises each input: fn (Field $field, string $locale): void (e.g. a max length, a slug generator).
+     *
+     * @param  'text'|'textarea'|'rich'|'tags'  $kind  tags = a list of strings per language (e.g. service features)
+     * @param  ?\Closure(Field, string): void  $tap
      */
     public static function bilingual(
         string $name,
@@ -64,35 +68,46 @@ final class Fields
         ?string $help = null,
         bool $required = false,
         int $maxLength = 500,
+        ?\Closure $tap = null,
+        int $rows = 3,
     ): Grid {
         $make = fn (string $locale): Field => match ($kind) {
-            'textarea' => Textarea::make("{$name}.{$locale}")->rows(3)->autosize(),
+            'textarea' => Textarea::make("{$name}.{$locale}")->rows($rows)->autosize(),
             'rich' => RichEditor::make("{$name}.{$locale}")->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
+            'tags' => TagsInput::make("{$name}.{$locale}")->reorderable()->placeholder(__('Type and press Enter')),
             default => TextInput::make("{$name}.{$locale}")->maxLength($maxLength),
         };
 
-        return Grid::make(['default' => 1, 'md' => 2])->schema([
-            $make('en')
-                ->label(__($label).' — English')
-                ->helperText($help)
-                ->required($required)
-                ->validationAttribute(__($label).' (English)')
-                ->extraInputAttributes(['dir' => 'ltr', 'lang' => 'en']),
-            $make('ar')
-                ->label(__($label).' — العربية')
-                ->live(onBlur: true)
-                // Not blocking: the website falls back to English, but editors should see the gap.
-                ->hint(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? __('Arabic missing') : null)
-                ->hintIcon(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? 'heroicon-m-exclamation-triangle' : null)
-                ->hintColor('warning')
-                ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
-        ]);
+        $en = $make('en')
+            ->label(__($label).' — English')
+            ->helperText($help)
+            ->required($required)
+            ->validationAttribute(__($label).' (English)')
+            ->extraInputAttributes(['dir' => 'ltr', 'lang' => 'en']);
+
+        $ar = $make('ar')
+            ->label(__($label).' — العربية')
+            ->live(onBlur: true)
+            // Not blocking: the website falls back to English, but editors should see the gap.
+            ->hint(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? __('Arabic missing') : null)
+            ->hintIcon(fn (mixed $state, Get $get): ?string => self::arabicMissing($state, $get("{$name}.en")) ? 'heroicon-m-exclamation-triangle' : null)
+            ->hintColor('warning')
+            ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']);
+
+        if ($tap !== null) {
+            $tap($en, 'en');
+            $tap($ar, 'ar');
+        }
+
+        return Grid::make(['default' => 1, 'md' => 2])->schema([$en, $ar]);
     }
 
-    /** Arabic is empty while English has text (both empty = nothing to translate yet). */
+    /** Arabic is empty while English has text (both empty = nothing to translate yet). Lists: empty AR list vs non-empty EN. */
     public static function arabicMissing(mixed $ar, mixed $en): bool
     {
-        $blank = fn (mixed $v): bool => trim(strip_tags((string) (is_string($v) ? $v : ''))) === '';
+        $blank = fn (mixed $v): bool => is_array($v)
+            ? array_filter($v, fn ($item): bool => trim(strip_tags((string) (is_scalar($item) ? $item : ''))) !== '') === []
+            : trim(strip_tags((string) (is_string($v) ? $v : ''))) === '';
 
         return $blank($ar) && ! $blank($en);
     }

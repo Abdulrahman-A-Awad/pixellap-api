@@ -11,25 +11,24 @@ use App\Filament\Support\NavGroup;
 use App\Filament\Support\TableKit;
 use App\Models\ServiceCategory;
 use App\Models\User;
+use App\Support\ArabicSearch;
 use App\Support\MimeTypes;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Livewire\Component as Livewire;
 
 class ServiceCategoryResource extends Resource
 {
-    use Translatable;
-
     public const SLUG_REGEX = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
     protected static ?string $model = ServiceCategory::class;
@@ -38,17 +37,41 @@ class ServiceCategoryResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    /** Global search (topbar): category title / slug and the titles of its services. */
+    /** Global search (topbar): category title / summary / slug and the titles of its services, EN + AR. */
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['title', 'slug', 'services.title'];
+        return ['title', 'excerpt', 'slug', 'services.title'];
+    }
+
+    protected static function applyGlobalSearchAttributeConstraints(Builder $query, string $search): void
+    {
+        ArabicSearch::apply($query, $search, translatable: ['title', 'excerpt'], plain: ['slug'], relations: [
+            'services' => ['translatable' => ['title']],
+        ]);
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string
     {
         return (string) $record->title;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        // Left-to-right isolate: the URL path stays readable inside Arabic text.
+        return [__('Page address') => "\u{2066}/services/{$record->slug}\u{2069}"];
+    }
+
+    /** EN title (+ page address) | AR title or "AR missing". */
+    private static function titleColumns(): array
+    {
+        [$en, $ar] = TableKit::bilingualColumns('title', 'Service');
+
+        return [
+            $en->description(fn (ServiceCategory $record): string => '/services/'.$record->slug),
+            $ar,
+        ];
     }
 
     public static function getNavigationGroup(): ?string
@@ -85,44 +108,40 @@ class ServiceCategoryResource extends Resource
             ->columns(3)
             ->schema([
                 Group::make()->columnSpan(2)->schema([
-                    Section::make(__('Content'))->schema([
-                        Fields::text('title')
-                            ->label('Service name')
-                            ->helperText(__('Shown on the service card, the menu and the service page.'))
-                            ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation, Livewire $livewire): void {
-                                // Generate the slug from the ENGLISH title on create only.
-                                $locale = property_exists($livewire, 'activeLocale') ? $livewire->activeLocale : 'en';
-
-                                if ($operation === 'create' && $locale === 'en' && blank($get('slug'))) {
-                                    $set('slug', Str::slug((string) $state));
-                                }
-                            }),
-                        TextInput::make('slug')
-                            ->label('Page address')
-                            ->required()
-                            ->maxLength(100)
-                            ->regex(self::SLUG_REGEX)
-                            ->unique(ignoreRecord: true)
-                            ->prefix('/services/')
-                            ->disabled(fn (string $operation): bool => self::slugLocked($operation))
-                            ->helperText(fn (string $operation): string => self::slugLocked($operation)
-                                ? __('Locked after creation because it is part of the page URL.')
-                                : __('Lowercase English letters, numbers and dashes. Generated from the English title.')),
-                        Fields::textarea('excerpt', 2)->label('Short summary')->required()->maxLength(255)
-                            ->helperText(__('One sentence on the service card and at the top of the service page.')),
-                        Fields::rich('description')->label('Overview')->required()
-                            ->helperText(__('The “Overview” text on the service page.')),
-                    ]),
+                    Section::make(__('Content'))
+                        ->description(__('English and Arabic side by side. Empty Arabic shows a warning; the website then uses the English text.'))
+                        ->schema([
+                            Fields::bilingual('title', 'Service name', help: __('Shown on the service card, the menu and the service page.'), required: true, maxLength: 255,
+                                tap: fn (Field $field, string $locale) => $locale === 'en' ? $field
+                                    ->live(onBlur: true)
+                                    // Generate the slug from the ENGLISH title on create only.
+                                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation): void {
+                                        if ($operation === 'create' && blank($get('slug'))) {
+                                            $set('slug', Str::slug((string) $state));
+                                        }
+                                    }) : null),
+                            TextInput::make('slug')
+                                ->label('Page address')
+                                ->required()
+                                ->maxLength(100)
+                                ->regex(self::SLUG_REGEX)
+                                ->unique(ignoreRecord: true)
+                                ->prefix('/services/')
+                                ->disabled(fn (string $operation): bool => self::slugLocked($operation))
+                                ->helperText(fn (string $operation): string => self::slugLocked($operation)
+                                    ? __('Locked after creation because it is part of the page URL.')
+                                    : __('Lowercase English letters, numbers and dashes. Generated from the English title.')),
+                            Fields::bilingual('excerpt', 'Short summary', 'textarea', __('One sentence on the service card and at the top of the service page.'), required: true, rows: 2,
+                                tap: fn (Field $field) => $field->maxLength(255)),
+                            Fields::bilingual('description', 'Overview', 'rich', __('The “Overview” text on the service page.'), required: true),
+                        ]),
                     Section::make(__('Google & sharing'))
                         ->collapsible()
                         ->collapsed()
                         ->schema([
-                            Fields::text('seo_title')->label('Page title for Google')->maxLength(70)
-                                ->helperText(__('Up to 60–70 characters. Leave empty to use the title.')),
-                            Fields::textarea('seo_description', 2)->label('Page description for Google')->maxLength(170)
-                                ->helperText(__('Up to 160 characters. Leave empty to use the short summary.')),
+                            Fields::bilingual('seo_title', 'Page title for Google', help: __('Up to 60–70 characters. Leave empty to use the title.'), maxLength: 70),
+                            Fields::bilingual('seo_description', 'Page description for Google', 'textarea', __('Up to 160 characters. Leave empty to use the short summary.'), rows: 2,
+                                tap: fn (Field $field) => $field->maxLength(170)),
                         ]),
                 ]),
                 Group::make()->columnSpan(1)->schema([
@@ -145,8 +164,7 @@ class ServiceCategoryResource extends Resource
             ->reorderable('sort')
             ->defaultSort('sort')
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Service')->weight('bold')->wrap()
-                    ->description(fn (ServiceCategory $record): string => '/services/'.$record->slug),
+                ...self::titleColumns(),
                 Tables\Columns\TextColumn::make('services_count')->label('Sub-services')->counts('services')->badge(),
                 TableKit::visibleToggle(),
             ])

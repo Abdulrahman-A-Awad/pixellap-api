@@ -9,6 +9,7 @@ use App\Filament\Resources\ContactMessageResource\Pages;
 use App\Filament\Support\TableKit;
 use App\Models\ContactMessage;
 use App\Models\ServiceCategory;
+use App\Support\ArabicSearch;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\Actions\Action;
 use Filament\Infolists\Components\Section;
@@ -41,7 +42,13 @@ class ContactMessageResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'email', 'company', 'phone'];
+        return ['name', 'email', 'company', 'phone', 'message'];
+    }
+
+    /** Arabic-aware (diacritics / alef forms ignored): see App\Support\ArabicSearch. */
+    protected static function applyGlobalSearchAttributeConstraints(Builder $query, string $search): void
+    {
+        ArabicSearch::apply($query, $search, plain: ['name', 'email', 'company', 'phone', 'message']);
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array

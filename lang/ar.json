@@ -521,5 +521,8 @@
     "— means the action does not exist for that area.": "علامة — تعني أن هذا الإجراء غير موجود في هذا القسم.",
     "Is Visible": "ظاهر",
     "Sort": "الترتيب",
-    "What this person can do in the admin.": "ما يمكن لهذا الشخص فعله في لوحة التحكم."
+    "What this person can do in the admin.": "ما يمكن لهذا الشخص فعله في لوحة التحكم.",
+    "English and Arabic side by side. Empty Arabic shows a warning; the website then uses the English text.": "الإنجليزية والعربية جنبًا إلى جنب. إذا تُركت العربية فارغة يظهر تنبيه، ويستخدم الموقع النص الإنجليزي.",
+    "Shown as a checklist. Type a feature and press Enter.": "تظهر كقائمة مزايا. اكتب الميزة واضغط Enter.",
+    "Type and press Enter": "اكتب واضغط Enter"
 }

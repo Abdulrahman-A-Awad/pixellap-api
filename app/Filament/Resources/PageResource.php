@@ -9,14 +9,17 @@ use App\Filament\Resources\PageResource\Pages;
 use App\Filament\Resources\PageResource\RelationManagers;
 use App\Filament\Support\Fields;
 use App\Filament\Support\NavGroup;
+use App\Filament\Support\TableKit;
 use App\Models\Page;
+use App\Support\ArabicSearch;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -24,8 +27,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PageResource extends Resource
 {
-    use Translatable;
-
     protected static ?string $model = Page::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -37,7 +38,15 @@ class PageResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['title', 'key'];
+        return ['title', 'subtitle', 'key', 'blocks.title'];
+    }
+
+    /** EN + AR (see App\Support\ArabicSearch): page title / short text / key and block headings. */
+    protected static function applyGlobalSearchAttributeConstraints(Builder $query, string $search): void
+    {
+        ArabicSearch::apply($query, $search, translatable: ['title', 'subtitle'], plain: ['key'], relations: [
+            'blocks' => ['translatable' => ['title']],
+        ]);
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string
@@ -81,20 +90,19 @@ class PageResource extends Resource
             ->columns(3)
             ->schema([
                 Group::make()->columnSpan(2)->schema([
-                    Section::make(__('Page header'))->schema([
-                        Fields::text('title')->label('Title')->required()
-                            ->helperText(__('The big heading at the top of the page.')),
-                        Fields::textarea('subtitle', 2)->label('Short text')
-                            ->helperText(__('One sentence under the heading. Optional.')),
-                    ]),
+                    Section::make(__('Page header'))
+                        ->description(__('English and Arabic side by side. Empty Arabic shows a warning; the website then uses the English text.'))
+                        ->schema([
+                            Fields::bilingual('title', 'Title', help: __('The big heading at the top of the page.'), required: true, maxLength: 255),
+                            Fields::bilingual('subtitle', 'Short text', 'textarea', __('One sentence under the heading. Optional.'), rows: 2),
+                        ]),
                     Section::make(__('Google & sharing'))
                         ->collapsible()
                         ->collapsed()
                         ->schema([
-                            Fields::text('seo_title')->label('Page title for Google')->maxLength(70)
-                                ->helperText(__('Up to 60–70 characters. Leave empty to use the title.')),
-                            Fields::textarea('seo_description', 2)->label('Page description for Google')->maxLength(170)
-                                ->helperText(__('Up to 160 characters. Leave empty to use the site default.')),
+                            Fields::bilingual('seo_title', 'Page title for Google', help: __('Up to 60–70 characters. Leave empty to use the title.'), maxLength: 70),
+                            Fields::bilingual('seo_description', 'Page description for Google', 'textarea', __('Up to 160 characters. Leave empty to use the site default.'), rows: 2,
+                                tap: fn (Field $field) => $field->maxLength(170)),
                         ]),
                 ]),
                 Section::make(__('Image'))->columnSpan(1)->schema([
@@ -117,7 +125,7 @@ class PageResource extends Resource
                     ->label('Page')
                     ->formatStateUsing(fn (PageKey $state): string => $state->getLabel())
                     ->weight('bold'),
-                Tables\Columns\TextColumn::make('title')->label('Title'),
+                ...TableKit::bilingualColumns('title', 'Title'),
                 Tables\Columns\TextColumn::make('blocks_count')->label('Blocks')->counts('blocks')->badge(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Updated')->since(),
             ])

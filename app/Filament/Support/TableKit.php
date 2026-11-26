@@ -36,21 +36,25 @@ final class TableKit
         $translation = fn (Model $record, string $locale): string => method_exists($record, 'getTranslation')
             ? trim(strip_tags((string) $record->getTranslation($name, $locale, false)))
             : '';
+        // "AR missing" only when there is English text to translate (optional fields may be empty in both).
+        $missing = fn (Model $record): bool => $translation($record, 'ar') === '' && $translation($record, 'en') !== '';
 
         return [
             TextColumn::make($name)
                 ->label(__($label).' (EN)')
                 ->state(fn (Model $record): string => $translation($record, 'en'))
+                ->placeholder('—')
                 ->limit($limit)
                 ->wrap()
                 ->weight('bold'),
             TextColumn::make("{$name}_ar")
                 ->label(__($label).' (AR)')
-                ->state(fn (Model $record): string => $translation($record, 'ar') ?: __('AR missing'))
-                ->badge(fn (Model $record): bool => $translation($record, 'ar') === '')
-                ->color(fn (Model $record): ?string => $translation($record, 'ar') === '' ? 'warning' : null)
-                ->icon(fn (Model $record): ?string => $translation($record, 'ar') === '' ? 'heroicon-m-exclamation-triangle' : null)
-                ->extraAttributes(fn (Model $record): array => $translation($record, 'ar') === '' ? [] : ['dir' => 'rtl', 'lang' => 'ar'])
+                ->state(fn (Model $record): string => $missing($record) ? __('AR missing') : $translation($record, 'ar'))
+                ->placeholder('—')
+                ->badge(fn (Model $record): bool => $missing($record))
+                ->color(fn (Model $record): ?string => $missing($record) ? 'warning' : null)
+                ->icon(fn (Model $record): ?string => $missing($record) ? 'heroicon-m-exclamation-triangle' : null)
+                ->extraAttributes(fn (Model $record): array => $missing($record) ? [] : ['dir' => 'rtl', 'lang' => 'ar'])
                 ->limit($limit)
                 ->wrap(),
         ];

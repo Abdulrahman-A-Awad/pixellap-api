@@ -220,15 +220,17 @@ class AdminPanelTest extends TestCase
         $this->assertTrue($admin->fresh()->is_active);
     }
 
-    public function test_switching_content_locale_shows_arabic_copy(): void
+    public function test_category_form_shows_both_languages_side_by_side(): void
     {
         $this->actingAs($this->superAdmin());
         $category = ServiceCategory::where('slug', 'brand-identity-design')->firstOrFail();
 
         Livewire::test(EditServiceCategory::class, ['record' => $category->getKey()])
-            ->assertFormSet(['title' => 'Brand Identity & Design'])
-            ->set('activeLocale', 'ar')
-            ->assertFormSet(['title' => 'بناء الهوية البصرية والتصميم الإبداعي', 'slug' => 'brand-identity-design']);
+            ->assertFormSet([
+                'title.en' => 'Brand Identity & Design',
+                'title.ar' => 'بناء الهوية البصرية والتصميم الإبداعي',
+                'slug' => 'brand-identity-design',
+            ]);
     }
 
     public function test_language_switch_sets_admin_locale(): void
