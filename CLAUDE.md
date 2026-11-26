@@ -64,14 +64,22 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
 ## Admin panel (Filament)
 
 - Navigation: Dashboard + Messages ungrouped, then `App\Filament\Support\NavGroup` CONTENT (Home Page, Services, Pages),
-  SETTINGS (Site settings, Interface texts), ACCESS (Users + Activity log (view only) for admin and super_admin, Roles for
+  SETTINGS (Site settings, Interface texts), ACCESS (Users + Activity log for admin and super_admin, Roles for
   super_admin only — driven purely by the policies/`canViewAny`; the group shows when any item is visible). Groups are not collapsible.
 - Stats, process steps, clients and home FAQs have NO resource: they are edited inside their home section
   (`EditHomeSection` footer → `App\Filament\Widgets\HomeItems\*Table`: modals, drag reorder via `RevalidatesOnReorder`,
   logged on the section). Their permissions are created by `ShieldPermissionSeeder::CUSTOM`.
-- Dashboard: `StatsOverview`, `WebsiteReadiness` (admins; checks in `App\Support\WebsiteReadiness`, cached 60 s, cleared by
-  `RevalidationService::touch()` and User saves), `LatestMessages`. Branding (logo, favicon, RH-Zak via
-  `public/fonts/rh-zak.css`, login hook views in `resources/views/filament/auth`) is set in `AdminPanelProvider`.
+- Dashboard (greeting + date header, View website / Refresh cache actions), widgets decide their own visibility:
+  `StatsOverview` (4 KPIs, needs Messages → View; services card needs Services → View), `QuickActions` (tiles filtered by
+  permission; hidden when empty), `WebsiteReadiness` (compact bar; admins + whoever edits home/settings; checks in
+  `App\Support\WebsiteReadiness`, cached 60 s, cleared by `RevalidationService::touch()` and User saves), `LatestMessages`
+  (Messages → View), `MessagesChart` (30-day bars, super_admin + admin). No `widget_*` permissions (Shield widgets disabled).
+- Branding (logo, favicon, RH-Zak via `public/fonts/rh-zak.css`, login tagline hook in `resources/views/filament/auth`) is set
+  in `AdminPanelProvider`. **Theme: `public/css/pixellap-admin.css`** (plain CSS, `FilamentAsset` Css::make, versioned by
+  filemtime). Filament only ships the Tailwind classes it uses: style new custom views with `px-*` classes in that file
+  (logical properties for RTL), not arbitrary Tailwind utilities.
+- Topbar: global search (messages, service categories incl. service titles, pages), View website icon, bell, user menu
+  (name + role header, My profile (`->profile()`), theme, language, sign out).
 - Every form field: plain-language label + helper text, both in `lang/ar.json`. Home section fields per key come from
   `HomeSectionKey::fields()` — the form and the API hide what the website does not render.
 - Build translatable inputs with `App\Filament\Support\Fields` (`text`/`textarea`/`rich` add `dir="auto"`;
@@ -86,11 +94,24 @@ This repo is the Laravel API + Filament admin. A separate Next.js app (`../pixel
   header action; relation managers use the RM `Translatable` concern + `Tables\Actions\LocaleSwitcher`.
 - `site_name` is a translatable setting ("Pixellap" / "بكسل لاب"). Brand icons for the admin: `resources/svg/brands`
   (blade-icons set `brand-*`, registered in `AppServiceProvider::register`).
-- Admin UI language: `users.admin_locale` applied by `SetAdminLocale` (must run BEFORE `DispatchServingFilamentEvent`,
-  which builds the navigation). Admin labels are English and translated via `lang/ar.json` — add every new label there.
+- Admin UI language: ONE switch, the user-menu item → `POST /admin/locale/{en|ar}` (`SwitchAdminLocaleController`) writes
+  `users.admin_locale` (default `ar` for new accounts; factories/the local dev admin use `en` because tests assert English)
+  + an `admin_locale` cookie for the login page. `SetAdminLocale` (must run BEFORE `DispatchServingFilamentEvent`, which
+  builds the navigation) reads them, falling back to `ar`. Never add another language field/toggle. Admin labels are
+  English and translated via `lang/ar.json` — add every new label there. (Services/Pages content `LocaleSwitcher`s choose
+  which translation you edit; they are not UI language switches.)
 - Permissions: Shield. **Re-generate with `php artisan shield:generate --all --panel=admin --ignore-existing-policies`**
   — `UserPolicy` and `UiStringPolicy` contain hand-written rules; `ServicePolicy`/`PageBlockPolicy` are hand-made.
-  The role → permission matrix is `ShieldPermissionSeeder` (idempotent, part of `DatabaseSeeder`).
+  The seeded role → permission sets are `ShieldPermissionSeeder` (idempotent, part of `DatabaseSeeder`).
+- Roles screen: our own `App\Filament\Resources\RoleResource` (`/admin/roles`; Shield registers its resource only when no
+  `\RoleResource` exists). One matrix of areas × View/Add/Edit/Delete/Reorder from `App\Filament\Support\PermissionMatrix`
+  (single source: area → Shield identifiers; never writes replicate/restore/force_delete/widget permissions; Site settings =
+  `page_ManageSettings`). New resource/area → add it to `PermissionMatrix::areas()` and `ActivityDescriber::subjects()`.
+  `super_admin` ("Full access") can never be edited/deleted (resource + `Gate::before`); built-in roles keep their name and
+  cannot be deleted (`PermissionMatrix::BUILT_IN`). `roles.description` = the one-liner in the list and the user form.
+- Activity log: sentences via `App\Support\ActivityDescriber` ("{causer} edited the Home page section: Hero"), filters
+  area/user/event/date, bulk delete (policy `deleteAny`), "Clear entire log" (super_admin, typed CONFIRM; truncates and logs
+  `cleared`). Retention 30 days: `activitylog.delete_records_older_than_days` + daily `activitylog:clean --days=30` (03:15).
 - User protection: non-super admins never see/edit super admins or grant `super_admin` (validated server-side);
   nobody can delete/deactivate themselves (also enforced in `Gate::before` for super admins).
 - Table reorder (`->reorderable('sort')`) writes with a query update — no model events fire (no activity log).

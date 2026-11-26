@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -81,6 +82,13 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($ability, ['delete', 'forceDelete'], true)
                 && ($arguments[0] ?? null) instanceof User
                 && $arguments[0]->is($user)) {
+                return false;
+            }
+
+            // The super_admin role ("Full access") is never edited or deleted, by anyone.
+            if (in_array($ability, ['update', 'delete', 'forceDelete'], true)
+                && ($arguments[0] ?? null) instanceof Role
+                && $arguments[0]->name === self::SUPER_ADMIN_ROLE) {
                 return false;
             }
 

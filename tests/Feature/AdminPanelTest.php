@@ -38,7 +38,7 @@ class AdminPanelTest extends TestCase
     /** Admin index paths (relative to /admin). */
     private const INDEXES = [
         'home-sections', 'service-categories', 'pages', 'contact-messages', 'settings',
-        'ui-strings', 'users', 'shield/roles', 'activity-log',
+        'ui-strings', 'users', 'roles', 'activity-log',
     ];
 
     /** Which indexes each role may open (everything else must be 403). */
@@ -143,9 +143,12 @@ class AdminPanelTest extends TestCase
             ->assertDontSee('/admin/service-categories')
             ->assertDontSee('/admin/settings')
             ->assertDontSee('/admin/users') // nav link ("Users" alone matches Windows paths in Livewire snapshots)
-            // Which widget components are on the dashboard.
+            // Dashboard: only the messages widgets (KPIs without the services card + latest messages).
             ->assertSee('Latest messages')
-            ->assertDontSee('Messages this month')
+            ->assertSee('Messages this month')
+            ->assertDontSee('Services visible')
+            ->assertDontSee('Quick actions')
+            ->assertDontSee('Messages — last 30 days')
             ->assertDontSee('Website readiness');
     }
 
@@ -228,15 +231,22 @@ class AdminPanelTest extends TestCase
             ->assertFormSet(['title' => 'بناء الهوية البصرية والتصميم الإبداعي', 'slug' => 'brand-identity-design']);
     }
 
-    public function test_locale_toggle_flips_admin_locale(): void
+    public function test_language_switch_sets_admin_locale(): void
     {
         $user = $this->superAdmin();
+        $user->forceFill(['admin_locale' => 'en'])->save();
 
-        $this->actingAs($user)->post('/admin/locale/toggle')->assertRedirect();
+        $this->actingAs($user)->post('/admin/locale/ar')->assertRedirect();
         $this->assertSame('ar', $user->fresh()->admin_locale);
 
-        $this->actingAs($user->fresh())->post('/admin/locale/toggle')->assertRedirect();
+        // Explicit target: posting the same language twice never flips it back.
+        $this->actingAs($user->fresh())->post('/admin/locale/ar')->assertRedirect();
+        $this->assertSame('ar', $user->fresh()->admin_locale);
+
+        $this->actingAs($user->fresh())->post('/admin/locale/en')->assertRedirect();
         $this->assertSame('en', $user->fresh()->admin_locale);
+
+        $this->actingAs($user->fresh())->post('/admin/locale/fr')->assertNotFound();
     }
 
     /**
@@ -303,7 +313,7 @@ class AdminPanelTest extends TestCase
             '/admin/users/create',
             "/admin/users/{$editor->id}/edit",
             "/admin/activity-log/{$activity->id}",
-            '/admin/shield/roles/create',
+            '/admin/roles/create',
         ];
 
         foreach ($urls as $url) {

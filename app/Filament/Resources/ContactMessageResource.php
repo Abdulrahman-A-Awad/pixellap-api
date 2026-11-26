@@ -20,6 +20,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Gate;
 
@@ -34,6 +35,22 @@ class ContactMessageResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-inbox';
 
     protected static ?int $navigationSort = 1;
+
+    /** Global search (topbar): name, email, company, phone. */
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'company', 'phone'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            __('Email') => $record->email,
+            __('Received') => $record->created_at?->diffForHumans(),
+        ];
+    }
 
     public static function getNavigationGroup(): ?string
     {

@@ -11,5 +11,5 @@ use Illuminate\Support\Facades\Schedule;
 
 // Housekeeping only (no feature changes).
 Schedule::command('queue:prune-failed --hours=336')->daily();   // keep failed jobs 14 days
-Schedule::command('activitylog:clean')->weekly();               // config/activitylog.php retention
+Schedule::command('activitylog:clean', ['--days' => 30, '--force' => true])->dailyAt('03:15'); // activity log: 30-day retention
 Schedule::command('auth:clear-resets')->daily();

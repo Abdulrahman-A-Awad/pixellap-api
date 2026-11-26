@@ -54,7 +54,7 @@ return [
 
     'entities' => [
         'pages' => true,
-        'widgets' => true,
+        'widgets' => false, // dashboard widgets follow their area's View (PermissionMatrix::can)
         'resources' => true,
         'custom_permissions' => true,
     ],

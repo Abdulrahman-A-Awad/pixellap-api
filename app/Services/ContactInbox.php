@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Filament\Resources\ContactMessageResource;
+use App\Http\Middleware\SetAdminLocale;
 use App\Mail\NewContactMessage;
 use App\Models\ContactMessage;
 use App\Models\ServiceCategory;
@@ -83,7 +84,7 @@ final class ContactInbox
 
         foreach ($users as $user) {
             // Written in each recipient's admin language.
-            $locale = $user->admin_locale ?: 'en';
+            $locale = SetAdminLocale::current($user);
 
             Notification::make()
                 ->title(__('New contact message', [], $locale))

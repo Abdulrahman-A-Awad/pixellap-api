@@ -8,13 +8,17 @@ use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Filament\Support\NavGroup;
 use App\Filament\Support\TableKit;
 use App\Models\User;
+use App\Support\ActivityDescriber;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity;
 
 /**
@@ -55,6 +59,7 @@ class ActivityLogResource extends Resource
         return false;
     }
 
+    /** Single rows are not deleted one by one: bulk delete (policy) or "Clear entire log" (super admin). */
     public static function canDelete(Model $record): bool
     {
         return false;
@@ -62,7 +67,14 @@ class ActivityLogResource extends Resource
 
     public static function canDeleteAny(): bool
     {
-        return false;
+        return Gate::allows('deleteAny', Activity::class);
+    }
+
+    public static function canClear(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof User && $user->isSuperAdmin();
     }
 
     /** "attribute: old → new" lines from the logged properties. */
@@ -79,9 +91,9 @@ class ActivityLogResource extends Resource
         };
 
         return collect(array_unique([...array_keys($new), ...array_keys($old)]))
-            ->map(fn (string $key): string => array_key_exists($key, $old)
-                ? "{$key}: {$format($old[$key])} → {$format($new[$key] ?? null)}"
-                : "{$key}: {$format($new[$key] ?? null)}")
+            ->map(fn (string $key): string => __(Str::headline($key)).': '.(array_key_exists($key, $old)
+                ? "{$format($old[$key])} → {$format($new[$key] ?? null)}"
+                : $format($new[$key] ?? null)))
             ->values()
             ->all();
     }
@@ -90,47 +102,67 @@ class ActivityLogResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['causer', 'subject']))
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')->label('When')->since()->sortable()->dateTimeTooltip(),
-                Tables\Columns\TextColumn::make('causer.name')->label('By')->placeholder(__('System')),
                 Tables\Columns\TextColumn::make('event')->label('Event')->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'created' => 'success',
-                        'updated' => 'info',
-                        'deleted' => 'danger',
-                        default => 'gray',
-                    }),
-                Tables\Columns\TextColumn::make('subject_type')
-                    ->label('Item')
-                    ->formatStateUsing(fn (?string $state, Activity $record): string => class_basename((string) $state).' #'.$record->subject_id),
-                Tables\Columns\TextColumn::make('log_name')->label('Log')->badge()->color('gray')->toggleable(isToggledHiddenByDefault: true),
+                    ->formatStateUsing(fn (?string $state): string => ActivityDescriber::eventLabel($state))
+                    ->color(fn (?string $state): string => ActivityDescriber::eventColor($state)),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('What happened')
+                    ->state(fn (Activity $record): string => ActivityDescriber::sentence($record))
+                    ->description(fn (Activity $record): ?string => ActivityDescriber::area($record))
+                    ->weight('medium')
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('created_at')->label('When')->since()->sortable()->dateTimeTooltip()
+                    ->color('gray'),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('area')
+                    ->label('Area')
+                    ->options(fn (): array => ActivityDescriber::areaOptions())
+                    ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null)
+                        ? $query->whereIn('subject_type', ActivityDescriber::classesFor((string) $data['value']))
+                        : $query),
                 Tables\Filters\SelectFilter::make('causer_id')
-                    ->label('By')
+                    ->label('User')
                     ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all()),
-                Tables\Filters\SelectFilter::make('subject_type')
-                    ->label('Item type')
-                    ->options(fn (): array => Activity::query()->distinct()->whereNotNull('subject_type')->pluck('subject_type')
-                        ->mapWithKeys(fn (string $type): array => [$type => class_basename($type)])->sort()->all()),
+                Tables\Filters\SelectFilter::make('event')
+                    ->label('Event')
+                    ->options(fn (): array => ActivityDescriber::eventOptions()),
                 TableKit::dateRangeFilter(),
             ])
+            ->filtersFormColumns(2)
             ->actions([
-                Tables\Actions\ViewAction::make(),
-            ]);
+                Tables\Actions\ViewAction::make()->iconButton(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()
+                    ->visible(fn (): bool => static::canDeleteAny())
+                    ->modalHeading(__('Delete selected log entries?'))
+                    ->modalDescription(__('The entries are removed from the history for good. The content itself is not changed.')),
+            ])
+            ->emptyStateIcon('heroicon-o-clipboard-document-list')
+            ->emptyStateHeading(__('No activity yet'))
+            ->emptyStateDescription(__('Changes made in the admin will be listed here.'));
     }
 
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
             Section::make()->columns(3)->schema([
+                TextEntry::make('sentence')->label('What happened')
+                    ->state(fn (Activity $record): string => ActivityDescriber::sentence($record))
+                    ->weight('bold')
+                    ->columnSpanFull(),
                 TextEntry::make('created_at')->label('When')->dateTime(),
-                TextEntry::make('causer.name')->label('By')->placeholder(__('System')),
-                TextEntry::make('event')->label('Event')->badge(),
-                TextEntry::make('subject_type')->label('Item')
-                    ->formatStateUsing(fn (?string $state, Activity $record): string => class_basename((string) $state).' #'.$record->subject_id),
-                TextEntry::make('log_name')->label('Log')->badge()->color('gray'),
-                TextEntry::make('description')->label('Description'),
+                TextEntry::make('causer')->label('By')
+                    ->state(fn (Activity $record): string => ActivityDescriber::causer($record)),
+                TextEntry::make('event')->label('Event')->badge()
+                    ->formatStateUsing(fn (?string $state): string => ActivityDescriber::eventLabel($state))
+                    ->color(fn (?string $state): string => ActivityDescriber::eventColor($state)),
+                TextEntry::make('area')->label('Area')
+                    ->state(fn (Activity $record): ?string => ActivityDescriber::area($record))
+                    ->placeholder('—'),
             ]),
             Section::make(__('Changes'))->schema([
                 TextEntry::make('changes')

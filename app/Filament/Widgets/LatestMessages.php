@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\ContactMessageResource;
+use App\Filament\Support\PermissionMatrix;
 use App\Models\ContactMessage;
-use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -14,11 +14,14 @@ use Filament\Widgets\TableWidget;
 /** The 5 most recent contact messages; a row opens the message. */
 class LatestMessages extends TableWidget
 {
-    use HasWidgetShield;
-
     public const LIMIT = 5;
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
+
+    public static function canView(): bool
+    {
+        return PermissionMatrix::can('messages');
+    }
 
     /** Rendered with the page: a lazy placeholder showed as an empty card. */
     protected static bool $isLazy = false;
@@ -36,7 +39,7 @@ class LatestMessages extends TableWidget
             // Limit through the keys (a ->limit() on the table query is dropped by Filament's count/sort).
             ->query(fn () => ContactMessage::query()
                 ->with('serviceCategory')
-                ->whereKey(ContactMessage::query()->latest('id')->limit(self::LIMIT)->pluck('id')))
+                ->whereKey(ContactMessage::query()->latest()->latest('id')->limit(self::LIMIT)->pluck('id')))
             ->defaultSort('created_at', 'desc')
             ->paginated(false)
             ->recordUrl(fn (ContactMessage $record): string => ContactMessageResource::getUrl('view', ['record' => $record]))

@@ -9,6 +9,7 @@ use App\Enums\HomeSectionKey;
 use App\Filament\Resources\ActivityLogResource;
 use App\Filament\Resources\HomeSectionResource;
 use App\Filament\Resources\HomeSectionResource\Pages\EditHomeSection;
+use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Widgets\HomeItems\ClientsTable;
 use App\Filament\Widgets\HomeItems\HomeFaqsTable;
@@ -27,7 +28,6 @@ use App\Models\Setting;
 use App\Models\Stat;
 use App\Models\User;
 use App\Support\WebsiteReadiness;
-use BezhanSalleh\FilamentShield\Resources\RoleResource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -76,7 +76,7 @@ class AdminSimplifiedPanelTest extends TestCase
         foreach (['Content', 'Settings', 'Access', 'Home Page', 'Services', 'Pages', 'Site settings', 'Interface texts', 'Messages'] as $label) {
             $this->assertStringContainsString($label, $html, $label);
         }
-        foreach (['/admin/users', '/admin/shield/roles', '/admin/activity-log'] as $link) {
+        foreach (['/admin/users', '/admin/roles', '/admin/activity-log'] as $link) {
             $this->assertStringContainsString($link, $html, $link);
         }
 
@@ -114,7 +114,7 @@ class AdminSimplifiedPanelTest extends TestCase
 
         $expected = array_keys(array_filter([
             'users' => $users,
-            'shield/roles' => $roles,
+            'roles' => $roles,
             'activity-log' => $activity,
         ]));
 
@@ -128,7 +128,7 @@ class AdminSimplifiedPanelTest extends TestCase
         }
     }
 
-    public function test_admin_activity_log_is_view_only(): void
+    public function test_admin_activity_log_is_read_only_except_bulk_delete(): void
     {
         $this->actingAs($this->userWithRole('admin'));
         activity()->log('test');
@@ -139,7 +139,8 @@ class AdminSimplifiedPanelTest extends TestCase
         $this->assertFalse(ActivityLogResource::canCreate());
         $this->assertFalse(ActivityLogResource::canEdit($activity));
         $this->assertFalse(ActivityLogResource::canDelete($activity));
-        $this->assertFalse(ActivityLogResource::canDeleteAny());
+        $this->assertTrue(ActivityLogResource::canDeleteAny(), 'admins may bulk delete selected rows');
+        $this->assertFalse(ActivityLogResource::canClear(), 'only a super admin clears the whole log');
     }
 
     /* ─────────────────────────── Home sections list ─────────────────────────── */
@@ -259,8 +260,7 @@ class AdminSimplifiedPanelTest extends TestCase
         $this->actingAs($this->superAdmin())->get('/admin')->assertOk()
             ->assertDontSee('fi-account-widget', false)
             ->assertDontSee('filament-info-widget')
-            ->assertSee(['New messages', 'Messages this month', 'Website readiness', 'Latest messages'])
-            ->assertDontSee('Visible services');
+            ->assertSee(['New messages', 'Messages this month', 'Total messages', 'Services visible', 'Quick actions', 'Website readiness', 'Latest messages']);
 
         ContactMessage::create(['name' => 'A', 'email' => 'a@example.com', 'message' => 'Hi', 'locale' => 'en']);
         $counts = StatsOverview::dailyCounts(30);
@@ -285,12 +285,15 @@ class AdminSimplifiedPanelTest extends TestCase
             ->assertSee(ServiceCategory::first()->title);
     }
 
-    public function test_readiness_widget_is_for_admins_only(): void
+    public function test_readiness_widget_is_for_admins_and_content_editors(): void
     {
         $this->actingAs($this->userWithRole('admin'));
         $this->assertTrue(ReadinessWidget::canView());
 
         $this->actingAs($this->userWithRole('content_editor'));
+        $this->assertTrue(ReadinessWidget::canView());
+
+        $this->actingAs($this->userWithRole('sales'));
         $this->assertFalse(ReadinessWidget::canView());
         $this->get('/admin')->assertOk()->assertDontSee('Website readiness');
     }

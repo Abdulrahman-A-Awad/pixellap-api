@@ -17,7 +17,7 @@ use Spatie\Permission\PermissionRegistrar;
  *   super_admin    everything (Gate::before — no permissions stored)
  *   admin          everything except managing Shield roles
  *   content_editor view/create/update/reorder content, edit interface texts; never delete
- *   sales          contact messages: view + update only; LatestMessages dashboard widget
+ *   sales          contact messages: view + update only (dashboard: messages widgets)
  */
 class ShieldPermissionSeeder extends Seeder
 {
@@ -66,7 +66,6 @@ class ShieldPermissionSeeder extends Seeder
 
         $this->sync('sales', [
             'view_any_contact::message', 'view_contact::message', 'update_contact::message',
-            'widget_LatestMessages', // dashboard inbox (not the stats widget)
         ]);
 
         // super_admin keeps no explicit permissions; Gate::before grants everything.

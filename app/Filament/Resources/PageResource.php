@@ -32,6 +32,19 @@ class PageResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    /** Global search (topbar). */
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'key'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return (string) $record->title;
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __(NavGroup::CONTENT);

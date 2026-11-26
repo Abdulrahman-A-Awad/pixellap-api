@@ -7,6 +7,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Support\NavGroup;
+use App\Http\Controllers\Admin\SwitchAdminLocaleController;
 use App\Http\Middleware\RequireHttps;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAdminLocale;
@@ -24,8 +25,10 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\View\PanelsRenderHook;
@@ -39,6 +42,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public const THEME_CSS = 'css/pixellap-admin.css';
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -69,12 +74,21 @@ class AdminPanelProvider extends PanelProvider
                     ->collapsible(false),
                 NavGroup::ordered(),
             ))
+            // My profile (name, email, password, photo) from the user menu.
+            ->profile(isSimple: false)
+            // User menu: name + role header, My profile, theme, the ONLY language switch, sign out.
             ->userMenuItems([
-                MenuItem::make()
-                    ->label('العربية / English')
+                'profile' => MenuItem::make()
+                    ->label(fn (): string => __('My profile'))
+                    ->icon('heroicon-o-user-circle'),
+                'language' => MenuItem::make()
+                    ->label(fn (): string => SwitchAdminLocaleController::other() === 'ar' ? 'العربية' : 'English')
                     ->icon('heroicon-o-language')
-                    ->postAction(fn (): string => route('admin.locale.toggle')),
+                    ->postAction(fn (): string => route('admin.locale.switch', ['locale' => SwitchAdminLocaleController::other()])),
+                'logout' => MenuItem::make()->label(fn (): string => __('Sign out')),
             ])
+            ->globalSearch()
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->plugins([
                 SpatieLaravelTranslatablePlugin::make()
                     ->defaultLocales(['en', 'ar']),
@@ -94,8 +108,12 @@ class AdminPanelProvider extends PanelProvider
                 fn (): View => view('filament.auth.login-tagline'),
             )
             ->renderHook(
-                PanelsRenderHook::STYLES_AFTER,
-                fn (): View => view('filament.auth.panel-styles'),
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                fn (): View => view('filament.topbar.view-website'),
+            )
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_PROFILE_BEFORE,
+                fn (): View => view('filament.topbar.user-header'),
             )
             ->middleware([
                 // Production: HTTPS only (redirect GET, refuse the rest).
@@ -125,6 +143,12 @@ class AdminPanelProvider extends PanelProvider
 
     public function boot(): void
     {
+        // Admin theme: plain CSS, no build step (public/css/pixellap-admin.css). Versioned by file time.
+        $theme = public_path(self::THEME_CSS);
+        FilamentAsset::register([
+            Css::make('pixellap-admin', asset(self::THEME_CSS).'?v='.(is_file($theme) ? filemtime($theme) : '0')),
+        ], 'app');
+
         // Admin labels are written in English and translated through lang/ar.json
         // when a user switches the admin UI to Arabic.
         Field::configureUsing(fn (Field $field) => $field->translateLabel());

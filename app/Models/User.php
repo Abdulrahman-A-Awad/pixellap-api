@@ -41,7 +41,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
      */
     protected $attributes = [
         'is_active' => true,
-        'admin_locale' => 'en',
+        'admin_locale' => 'ar',
     ];
 
     /**

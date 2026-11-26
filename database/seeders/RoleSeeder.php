@@ -33,7 +33,8 @@ class RoleSeeder extends Seeder
         // Local/testing convenience super admin. Existing users keep their current password.
         $admin = User::firstOrCreate(
             ['email' => 'admin@pixellap.test'],
-            ['name' => 'Super Admin', 'password' => 'password', 'is_active' => true],
+            // English UI for the local account (tests assert English labels); real accounts default to Arabic.
+            ['name' => 'Super Admin', 'password' => 'password', 'is_active' => true, 'admin_locale' => 'en'],
         );
 
         if (! $admin->hasRole(AppServiceProvider::SUPER_ADMIN_ROLE)) {

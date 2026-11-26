@@ -7,9 +7,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Support\Fields;
 use App\Filament\Support\NavGroup;
+use App\Filament\Support\PermissionMatrix;
 use App\Models\User;
 use App\Providers\AppServiceProvider;
 use Closure;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
@@ -17,12 +19,16 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -67,6 +73,24 @@ class UserResource extends Resource
         return Role::query()->where('name', AppServiceProvider::SUPER_ADMIN_ROLE)->value('id');
     }
 
+    /** 16 characters: letters, numbers and symbols. */
+    public static function generatePassword(): string
+    {
+        return Str::password(16);
+    }
+
+    /** One line per role this user may grant: "Admin — everything except managing roles." */
+    private static function roleDescriptions(): HtmlString
+    {
+        return Role::query()
+            ->where('guard_name', 'web')
+            ->when(! self::actor()?->isSuperAdmin(), fn (Builder $q) => $q->where('name', '!=', AppServiceProvider::SUPER_ADMIN_ROLE))
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Role $role): string => '<strong>'.e(PermissionMatrix::roleLabel($role->name)).'</strong> — '.e(PermissionMatrix::roleDescription($role) ?? '—'))
+            ->pipe(fn ($lines) => new HtmlString($lines->implode('<br>')));
+    }
+
     private static function isSelf(?User $record): bool
     {
         return $record !== null && self::actor()?->is($record);
@@ -90,32 +114,59 @@ class UserResource extends Resource
             ->columns(3)
             ->schema([
                 Group::make()->columnSpan(2)->schema([
-                    Section::make(__('Account'))->columns(2)->schema([
-                        TextInput::make('name')->label('Name')->required()->maxLength(255)
-                            ->helperText(__('Shown in the admin only.')),
-                        TextInput::make('email')->label('Email')->email()->required()->maxLength(255)
-                            ->unique(ignoreRecord: true),
-                        TextInput::make('password')
-                            ->label('Password')
-                            ->password()
-                            ->revealable()
-                            ->minLength(8)
-                            ->required(fn (string $operation): bool => $operation === 'create')
-                            ->dehydrated(fn (?string $state): bool => filled($state)) // hashed by the model cast
-                            ->helperText(fn (string $operation): ?string => $operation === 'edit'
-                                ? __('Leave empty to keep the current password.') : null),
-                        Select::make('admin_locale')
-                            ->label('Admin language')
-                            ->helperText(__('Language of this admin panel for this person.'))
-                            ->options(['en' => 'English', 'ar' => 'العربية'])
-                            ->default('en')
-                            ->required()
-                            ->native(false),
-                    ]),
-                    Section::make(__('Access'))->columns(2)->schema([
+                    // No browser autofill: the create form must open empty (not with the admin's own saved login).
+                    Section::make(__('Account'))
+                        ->description(__('Who this person is and how they sign in.'))
+                        ->columns(2)
+                        ->schema([
+                            TextInput::make('name')->label('Name')->required()->maxLength(255)
+                                ->autocomplete('off')
+                                ->extraInputAttributes(['data-lpignore' => 'true', 'data-1p-ignore' => 'true'])
+                                ->helperText(__('Shown in the admin only.')),
+                            TextInput::make('email')->label('Email')->email()->required()->maxLength(255)
+                                ->autocomplete('off')
+                                ->extraInputAttributes(['data-lpignore' => 'true', 'data-1p-ignore' => 'true'])
+                                ->helperText(__('Used to sign in.'))
+                                ->unique(ignoreRecord: true),
+                            TextInput::make('password')
+                                ->label('Password')
+                                ->password()
+                                ->revealable()
+                                ->autocomplete('new-password')
+                                ->extraInputAttributes(['data-lpignore' => 'true', 'data-1p-ignore' => 'true'])
+                                ->minLength(8)
+                                ->required(fn (string $operation): bool => $operation === 'create')
+                                ->dehydrated(fn (?string $state): bool => filled($state)) // hashed by the model cast
+                                ->columnSpanFull()
+                                ->suffixActions([
+                                    FormAction::make('generatePassword')
+                                        ->label(__('Generate password'))
+                                        ->tooltip(__('Generate password'))
+                                        ->icon('heroicon-m-sparkles')
+                                        ->action(function (Set $set): void {
+                                            $set('password', self::generatePassword());
+                                            Notification::make()->success()
+                                                ->title(__('Password generated'))
+                                                ->body(__('Copy it now and send it to the person safely. It is not shown again after saving.'))
+                                                ->send();
+                                        }),
+                                    FormAction::make('copyPassword')
+                                        ->label(__('Copy password'))
+                                        ->tooltip(__('Copy password'))
+                                        ->icon('heroicon-m-clipboard-document')
+                                        ->alpineClickHandler(fn (): string => sprintf(
+                                            "const v = \$wire.get('data.password') ?? ''; if (v) { window.navigator.clipboard.writeText(v); \$tooltip(%s, { theme: \$store.theme, timeout: 2000 }) }",
+                                            json_encode(__('Copied'), JSON_UNESCAPED_UNICODE),
+                                        )),
+                                ])
+                                ->helperText(fn (string $operation): string => $operation === 'edit'
+                                    ? __('Leave empty to keep the current password.')
+                                    : __('At least 8 characters. Use "Generate password" for a strong one.')),
+                        ]),
+                    Section::make(__('Access'))->description(__('What this person can do in the admin.'))->columns(1)->schema([
                         Select::make('roles')
                             ->label('Roles')
-                            ->helperText(__('Admin: everything. Content editor: edits content, cannot delete. Sales: messages only.'))
+                            ->helperText(fn (): HtmlString => self::roleDescriptions())
                             ->relationship(
                                 'roles',
                                 'name',
@@ -123,7 +174,7 @@ class UserResource extends Resource
                                     ? $query
                                     : $query->where('name', '!=', AppServiceProvider::SUPER_ADMIN_ROLE),
                             )
-                            ->getOptionLabelFromRecordUsing(fn ($record): string => __(str($record->name)->headline()->toString()))
+                            ->getOptionLabelFromRecordUsing(fn (Role $record): string => PermissionMatrix::roleLabel($record->name))
                             // Hiding the option is not enough: Filament syncs whatever IDs are submitted.
                             ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
                                 if (! self::actor()?->isSuperAdmin() && in_array(self::superAdminRoleId(), array_map('intval', (array) $value), true)) {
@@ -176,7 +227,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Roles')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __(str($state)->headline()->toString())),
+                    ->formatStateUsing(fn (string $state): string => PermissionMatrix::roleLabel($state)),
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Active')
                     ->disabled(fn (User $record): bool => self::isSelf($record) || Gate::denies('update', $record)),
